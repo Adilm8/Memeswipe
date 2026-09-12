@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Bookmark, User, Heart, Sparkles, LogIn, LogOut, Flame, Bot, Send, Loader2, RotateCcw, MessageSquare, Search } from 'lucide-react';
+import { Bookmark, User, Heart, Sparkles, LogIn, LogOut, Flame, Bot, Send, Loader2, RotateCcw, Users, UserPlus } from 'lucide-react';
 import { useSession } from '@/hooks/useSession';
 import { fetchMatches } from '@/api/profile';
 import { chatWithAI } from '@/api/ai';
-import { fetchConversations } from '@/api/chat';
-import { Match, Conversation } from '@/api/types';
+import { fetchFriends } from '@/api/chat';
+import { Match, FriendItem } from '@/api/types';
 import AuthModal from '@/components/AuthModal';
 import UserSearchModal from '@/components/UserSearchModal';
 import clsx from 'clsx';
@@ -23,7 +23,7 @@ export default function Layout() {
   const navigate = useNavigate();
   const { session, likesCount, openAuthModal, logout } = useSession();
   const [matches, setMatches] = useState<Match[]>([]);
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [friends, setFriends] = useState<FriendItem[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [sidebarTab, setSidebarTab] = useState<'chats' | 'ai'>('chats');
 
@@ -92,27 +92,28 @@ export default function Layout() {
     }
   }, [session, likesCount]);
 
-  // Load and poll conversations for sidebar & unread badges
-  const loadConversations = useCallback(async () => {
+  // Load and poll friends & chats for sidebar & unread badges
+  const loadFriends = useCallback(async () => {
     if (session) {
       try {
-        const convs = await fetchConversations();
-        setConversations(convs);
+        const list = await fetchFriends();
+        setFriends(list);
       } catch (e) {
-        console.error("Failed to load conversations for sidebar:", e);
+        console.error("Failed to load friends for sidebar:", e);
       }
     }
   }, [session]);
 
   useEffect(() => {
-    loadConversations();
-    const interval = setInterval(loadConversations, 3500);
+    loadFriends();
+    const interval = setInterval(loadFriends, 3500);
     return () => clearInterval(interval);
-  }, [loadConversations]);
+  }, [loadFriends]);
 
-  const totalUnread = conversations.reduce((acc, c) => acc + (c.unread_count || 0), 0);
+  const totalUnread = friends.reduce((acc, f) => acc + (f.unread_count || 0), 0);
 
   const isSwipingRoute = location.pathname === '/';
+  const isSocialActive = location.pathname.startsWith('/chat') || location.pathname.startsWith('/social');
   const displayName = session?.username || session?.nickname || 'Guest';
   const initials = displayName.substring(0, 2).toUpperCase();
   const avatarUrl = session?.avatar_url;
@@ -216,13 +217,13 @@ export default function Layout() {
 
           <NavLink
             to="/chat"
-            title="Messages & Friends"
-            className={({ isActive }) => clsx(
+            title="Social & Friends"
+            className={clsx(
               "p-2 rounded-xl transition-all relative",
-              isActive ? "text-[#fe3c72] bg-rose-50 font-bold" : "text-slate-400 hover:text-slate-700"
+              isSocialActive ? "text-[#fe3c72] bg-rose-50 font-bold" : "text-slate-400 hover:text-slate-700"
             )}
           >
-            <MessageSquare size={19} strokeWidth={2.4} />
+            <Users size={19} strokeWidth={2.4} />
             {totalUnread > 0 && (
               <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#fe3c72]" />
             )}
@@ -379,16 +380,16 @@ export default function Layout() {
 
           <NavLink
             to="/chat"
-            title="Direct Chats & Friends"
-            className={({ isActive }) => clsx(
+            title="Social & Friends"
+            className={clsx(
               "flex-1 py-1.5 px-0.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1 transition-all relative",
-              isActive 
+              isSocialActive 
                 ? "text-[#fe3c72] bg-rose-50 border-b-2 border-[#fe3c72]"
                 : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
             )}
           >
-            <MessageSquare size={12} strokeWidth={2.4} />
-            <span className="truncate">Chats</span>
+            <Users size={12} strokeWidth={2.4} />
+            <span className="truncate">Social</span>
             {totalUnread > 0 && (
               <span className="px-1 py-0.1 bg-[#fe3c72] text-white rounded-full text-[9px] font-bold">
                 {totalUnread}
@@ -456,10 +457,12 @@ export default function Layout() {
                     : "text-slate-500 hover:text-slate-800"
                 )}
               >
-                <MessageSquare size={12} />
-                <span>Chats</span>
+                <Users size={12} />
+                <span>Friends</span>
                 {totalUnread > 0 && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#fe3c72]" />
+                  <span className="px-1 py-0.2 bg-[#fe3c72] text-white text-[9px] font-extrabold rounded-full leading-none">
+                    {totalUnread}
+                  </span>
                 )}
               </button>
 
@@ -483,10 +486,10 @@ export default function Layout() {
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
-                title="Find Friends"
+                title="Add Friends"
                 className="p-1.5 text-[#fe3c72] hover:bg-rose-50 border border-rose-200/80 rounded-xl transition-colors flex-none"
               >
-                <Search size={13} />
+                <UserPlus size={13} />
               </button>
             ) : (
               <button
@@ -500,90 +503,146 @@ export default function Layout() {
             )}
           </div>
 
-          {/* MODE 1: DIRECT CHATS LIST */}
+          {/* MODE 1: SOCIAL FRIENDS & CHATS DRAWER */}
           {sidebarTab === 'chats' ? (
             <div className="flex-1 flex flex-col min-h-0">
-              {conversations.length === 0 ? (
+              {friends.length === 0 ? (
                 <div className="flex-1 p-4 flex flex-col items-center justify-center text-center">
                   <div className="w-11 h-11 rounded-2xl bg-rose-50 flex items-center justify-center text-xl mb-2 border border-rose-100">
-                    💬
+                    👥
                   </div>
-                  <h5 className="text-xs font-bold text-slate-700 mb-0.5">No Active Chats</h5>
+                  <h5 className="text-xs font-bold text-slate-700 mb-0.5">No Friends Yet</h5>
                   <p className="text-[11px] text-slate-400 mb-3 max-w-[180px]">
-                    Search for users or match with humor twins to start chatting!
+                    Find friends by username or connect with humor twins to chat!
                   </p>
                   <button
                     onClick={() => setIsSearchOpen(true)}
                     className="px-3 py-1.5 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 hover:opacity-95"
                   >
-                    <Search size={12} />
+                    <UserPlus size={12} />
                     <span>Find Friends</span>
                   </button>
                 </div>
               ) : (
-                <div className="flex-1 overflow-y-auto divide-y divide-slate-100/80">
-                  {conversations.map((conv) => {
-                    const isCurrentChat = location.pathname === `/chat/${conv.friend_id}`;
-                    const pct = conv.compatibility > 1 ? Math.round(conv.compatibility) : Math.round(conv.compatibility * 100);
+                <div className="flex-1 flex flex-col min-h-0">
+                  {/* Social Media Stories / Active Friends Row */}
+                  <div className="flex-none p-2.5 border-b border-slate-100 bg-white/40 overflow-x-auto no-scrollbar flex items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setIsSearchOpen(true)}
+                      className="flex flex-col items-center gap-1 group flex-none cursor-pointer"
+                      title="Find & Add Friends"
+                    >
+                      <div className="w-10 h-10 rounded-full border-2 border-dashed border-rose-300 group-hover:border-[#fe3c72] group-hover:bg-rose-50/50 flex items-center justify-center text-[#fe3c72] transition-all">
+                        <UserPlus size={14} />
+                      </div>
+                      <span className="text-[10px] font-semibold text-slate-500 group-hover:text-[#fe3c72]">Add</span>
+                    </button>
 
-                    return (
-                      <div
-                        key={conv.friend_id}
-                        onClick={() => navigate(`/chat/${conv.friend_id}`)}
-                        className={clsx(
-                          "p-2.5 px-3 flex items-center justify-between cursor-pointer transition-colors group",
-                          isCurrentChat ? "bg-rose-50/80 border-l-3 border-[#fe3c72]" : "hover:bg-white"
-                        )}
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="relative flex-none">
-                            <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] flex items-center justify-center text-white font-bold text-xs shadow-2xs">
-                              {conv.avatar_url ? (
-                                <img
-                                  src={conv.avatar_url}
-                                  alt={conv.nickname}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <span>{conv.nickname.substring(0, 2).toUpperCase()}</span>
-                              )}
+                    {friends.map((f) => {
+                      const isCurrent = location.pathname === `/chat/${f.user_id}`;
+                      const pct = Math.round(f.compatibility > 1 ? f.compatibility : f.compatibility * 100);
+                      return (
+                        <button
+                          key={`story-${f.user_id}`}
+                          type="button"
+                          onClick={() => navigate(`/chat/${f.user_id}`)}
+                          className="flex flex-col items-center gap-1 group flex-none cursor-pointer text-left"
+                          title={`${f.nickname} (${pct}% match)`}
+                        >
+                          <div className="relative">
+                            <div className={clsx(
+                              "w-10 h-10 rounded-full p-0.5 transition-transform group-hover:scale-105",
+                              isCurrent 
+                                ? "bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] shadow-xs" 
+                                : "bg-slate-200 group-hover:bg-[#fe3c72]/50"
+                            )}>
+                              <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center text-xs font-bold text-slate-700">
+                                {f.avatar_url ? (
+                                  <img src={f.avatar_url} alt={f.nickname} className="w-full h-full object-cover" />
+                                ) : (
+                                  <span>{f.nickname.substring(0, 2).toUpperCase()}</span>
+                                )}
+                              </div>
                             </div>
                             <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white bg-emerald-500" />
                           </div>
+                          <span className="text-[10px] font-medium text-slate-600 group-hover:text-slate-900 truncate max-w-[48px] text-center">
+                            {f.nickname.split(' ')[0]}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
 
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5">
-                              <h5 className="text-xs font-bold text-slate-800 group-hover:text-[#fe3c72] transition-colors truncate">
-                                {conv.nickname}
-                              </h5>
-                              <span className="text-[9px] text-emerald-600 font-bold bg-emerald-50 border border-emerald-200/60 px-1 py-0.2 rounded-full">
-                                {pct}%
-                              </span>
+                  {/* Friends & Chats Vertical List */}
+                  <div className="flex-1 overflow-y-auto divide-y divide-slate-100/80">
+                    {friends.map((f) => {
+                      const isCurrentChat = location.pathname === `/chat/${f.user_id}`;
+                      const pct = Math.round(f.compatibility > 1 ? f.compatibility : f.compatibility * 100);
+
+                      return (
+                        <div
+                          key={f.user_id}
+                          onClick={() => navigate(`/chat/${f.user_id}`)}
+                          className={clsx(
+                            "p-2.5 px-3 flex items-center justify-between cursor-pointer transition-colors group",
+                            isCurrentChat ? "bg-rose-50/80 border-l-3 border-[#fe3c72]" : "hover:bg-white"
+                          )}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="relative flex-none">
+                              <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] flex items-center justify-center text-white font-bold text-xs shadow-2xs">
+                                {f.avatar_url ? (
+                                  <img
+                                    src={f.avatar_url}
+                                    alt={f.nickname}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <span>{f.nickname.substring(0, 2).toUpperCase()}</span>
+                                )}
+                              </div>
+                              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white bg-emerald-500" />
                             </div>
-                            <p className="text-[11px] text-slate-400 truncate mt-0.5">
-                              {conv.last_message || "Started chatting"}
-                            </p>
+
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5">
+                                <h5 className="text-xs font-bold text-slate-800 group-hover:text-[#fe3c72] transition-colors truncate">
+                                  {f.nickname}
+                                </h5>
+                                <span className="text-[9px] text-emerald-600 font-bold bg-emerald-50 border border-emerald-200/60 px-1 py-0.2 rounded-full flex-none">
+                                  {pct}%
+                                </span>
+                              </div>
+                              <p className={clsx(
+                                "text-[11px] truncate mt-0.5",
+                                f.unread_count > 0 ? "font-semibold text-slate-800" : "text-slate-400"
+                              )}>
+                                {f.last_message || "Say hello 👋"}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col items-end gap-1 flex-none ml-2">
+                            {f.unread_count > 0 && (
+                              <span className="px-1.5 py-0.2 bg-[#fe3c72] text-white rounded-full text-[9px] font-bold shadow-2xs">
+                                {f.unread_count}
+                              </span>
+                            )}
+                            <span className="text-[9px] text-slate-400">
+                              {f.last_message_time
+                                ? new Date(f.last_message_time).toLocaleTimeString([], {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })
+                                : ''}
+                            </span>
                           </div>
                         </div>
-
-                        <div className="flex flex-col items-end gap-1 flex-none ml-2">
-                          {conv.unread_count > 0 && (
-                            <span className="px-1.5 py-0.2 bg-[#fe3c72] text-white rounded-full text-[9px] font-bold">
-                              {conv.unread_count}
-                            </span>
-                          )}
-                          <span className="text-[9px] text-slate-400">
-                            {conv.last_message_time
-                              ? new Date(conv.last_message_time).toLocaleTimeString([], {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })
-                              : ''}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>

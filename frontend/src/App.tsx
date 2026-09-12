@@ -20,6 +20,8 @@ export default function App() {
           <Route path="/ai" element={<AIPage />} />
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/chat/:friendId" element={<ChatPage />} />
+          <Route path="/social" element={<ChatPage />} />
+          <Route path="/social/:friendId" element={<ChatPage />} />
         </Route>
       </Routes>
     </SessionProvider>

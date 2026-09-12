@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Bookmark, User, Heart, Sparkles, LogIn, LogOut, Flame, Bot, Send, Loader2 } from 'lucide-react';
+import { Bookmark, User, Heart, Sparkles, LogIn, LogOut, Flame, Bot, Send, Loader2, RotateCcw } from 'lucide-react';
 import { useSession } from '@/hooks/useSession';
 import { fetchMatches } from '@/api/profile';
 import { chatWithAI } from '@/api/ai';
@@ -8,20 +8,34 @@ import { Match } from '@/api/types';
 import AuthModal from '@/components/AuthModal';
 import clsx from 'clsx';
 
+const DEFAULT_COMPANION_MESSAGES: Array<{ id: string; sender: 'ai' | 'user'; text: string }> = [
+  {
+    id: '1',
+    sender: 'ai',
+    text: "Hey! 🤖 I'm your Meme Companion powered by Gemini. Swipe memes on the right, or pick a prompt below to roast your taste or analyze humor!"
+  }
+];
+
 export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { session, likesCount, openAuthModal, logout } = useSession();
   const [matches, setMatches] = useState<Match[]>([]);
 
-  // Live Gemini AI companion chat state
-  const [chatMessages, setChatMessages] = useState<Array<{ id: string; sender: 'ai' | 'user'; text: string }>>([
-    {
-      id: '1',
-      sender: 'ai',
-      text: "Hey! 🤖 I'm your Meme Companion powered by Gemini. Swipe memes on the right, or pick a prompt below to roast your taste or analyze humor!"
-    }
-  ]);
+  const companionKey = `memeswipe_companion_${session?.user_id || 'active'}`;
+
+  // Live Gemini AI companion chat state with session persistence
+  const [chatMessages, setChatMessages] = useState<Array<{ id: string; sender: 'ai' | 'user'; text: string }>>(() => {
+    try {
+      const stored = sessionStorage.getItem(companionKey) || localStorage.getItem(companionKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return DEFAULT_COMPANION_MESSAGES;
+  });
+
   const [chatInput, setChatInput] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
   const chatScrollRef = useRef<HTMLDivElement>(null);
@@ -32,6 +46,37 @@ export default function Layout() {
       chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
     }
   }, [chatMessages, isAiLoading]);
+
+  // Sync stored messages when active session changes
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem(companionKey) || localStorage.getItem(companionKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setChatMessages(parsed);
+          return;
+        }
+      }
+      setChatMessages(DEFAULT_COMPANION_MESSAGES);
+    } catch (e) {}
+  }, [companionKey]);
+
+  // Persist messages whenever chatMessages changes
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(companionKey, JSON.stringify(chatMessages));
+      localStorage.setItem(companionKey, JSON.stringify(chatMessages));
+    } catch (e) {}
+  }, [chatMessages, companionKey]);
+
+  const handleClearCompanion = () => {
+    setChatMessages(DEFAULT_COMPANION_MESSAGES);
+    try {
+      sessionStorage.removeItem(companionKey);
+      localStorage.removeItem(companionKey);
+    } catch (e) {}
+  };
 
   // Load matches whenever session or likesCount updates
   useEffect(() => {
@@ -353,10 +398,20 @@ export default function Layout() {
                 </h4>
               </div>
             </div>
-            <span className="text-[10px] font-extrabold uppercase tracking-wide bg-rose-50 text-[#fe3c72] border border-rose-200/80 px-2 py-0.5 rounded-full flex items-center gap-1">
-              <Sparkles size={10} />
-              Gemini AI
-            </span>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={handleClearCompanion}
+                title="Reset companion conversation"
+                className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <RotateCcw size={12} />
+              </button>
+              <span className="text-[10px] font-extrabold uppercase tracking-wide bg-rose-50 text-[#fe3c72] border border-rose-200/80 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <Sparkles size={10} />
+                Gemini AI
+              </span>
+            </div>
           </div>
 
           {/* Quick Prompt Suggestion Chips */}

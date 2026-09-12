@@ -1,18 +1,77 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AIMessage } from '@/api/types';
 import { chatWithAI, fetchHumorProfile } from '@/api/ai';
-import { Send, Sparkles, Loader2 } from 'lucide-react';
+import { useSession } from '@/hooks/useSession';
+import { Send, Sparkles, Loader2, RotateCcw } from 'lucide-react';
 import clsx from 'clsx';
 
+const DEFAULT_ANALYST_MESSAGES: AIMessage[] = [
+  { 
+    role: 'assistant', 
+    content: "Hi! I'm your AI Humor Analyst. Ask me anything about your meme taste, comedic patterns, or which matches share your sense of humor!" 
+  }
+];
+
 export default function AIChatPanel() {
-  const [messages, setMessages] = useState<AIMessage[]>([
-    { role: 'assistant', content: "Hi! I'm your AI Humor Analyst. Ask me anything about your meme taste, comedic patterns, or which matches share your sense of humor!" }
-  ]);
+  const { session } = useSession();
+  const analystStorageKey = `memeswipe_analyst_${session?.user_id || 'active'}`;
+
+  // Session-persisted messages across route navigation
+  const [messages, setMessages] = useState<AIMessage[]>(() => {
+    try {
+      const stored = sessionStorage.getItem(analystStorageKey) || localStorage.getItem(analystStorageKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return DEFAULT_ANALYST_MESSAGES;
+  });
+
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto scroll to bottom
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, loading]);
+
+  // Sync on session change
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem(analystStorageKey) || localStorage.getItem(analystStorageKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed);
+          return;
+        }
+      }
+      setMessages(DEFAULT_ANALYST_MESSAGES);
+    } catch (e) {}
+  }, [analystStorageKey]);
+
+  // Persist whenever messages change
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(analystStorageKey, JSON.stringify(messages));
+      localStorage.setItem(analystStorageKey, JSON.stringify(messages));
+    } catch (e) {}
+  }, [messages, analystStorageKey]);
+
+  const handleClear = () => {
+    setMessages(DEFAULT_ANALYST_MESSAGES);
+    try {
+      sessionStorage.removeItem(analystStorageKey);
+      localStorage.removeItem(analystStorageKey);
+    } catch (e) {}
+  };
 
   const sendMessage = async (text: string) => {
-    if (!text.trim()) return;
+    if (!text.trim() || loading) return;
     const newMsgs: AIMessage[] = [...messages, { role: 'user', content: text }];
     setMessages(newMsgs);
     setInput('');
@@ -45,7 +104,7 @@ export default function AIChatPanel() {
   return (
     <div className="flex flex-col h-full bg-[#f0f2f5]">
       {/* Messages Scroll Area */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 max-w-3xl w-full mx-auto">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 max-w-3xl w-full mx-auto">
         {messages.map((m, i) => (
           <div key={i} className={clsx("flex", m.role === 'user' ? "justify-end" : "justify-start")}>
             <div className={clsx(
@@ -71,7 +130,7 @@ export default function AIChatPanel() {
       {/* Bottom Input Area */}
       <div className="p-4 bg-white border-t border-slate-200/90 flex-none">
         <div className="max-w-3xl mx-auto space-y-2.5">
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
             <button 
               onClick={handleAnalyze} 
               disabled={loading}
@@ -93,6 +152,15 @@ export default function AIChatPanel() {
               className="flex-none text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 text-xs font-medium px-3 py-1.5 rounded-full transition-colors"
             >
               Explain my matches
+            </button>
+            <button 
+              onClick={handleClear} 
+              disabled={loading || messages.length <= 1}
+              title="Reset conversation"
+              className="flex-none flex items-center gap-1 text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 text-xs font-medium px-3 py-1.5 rounded-full transition-colors disabled:opacity-40 ml-auto"
+            >
+              <RotateCcw size={12} />
+              <span>Reset</span>
             </button>
           </div>
 

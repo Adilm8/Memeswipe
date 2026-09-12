@@ -20,10 +20,22 @@ class MemeResponse(BaseModel):
 class SwipeRequest(BaseModel):
     action: Literal["like", "dislike"]
 
+class UserRegisterRequest(BaseModel):
+    username: str
+    password: str
+    email: Optional[str] = None
+
+class UserLoginRequest(BaseModel):
+    username: str
+    password: str
+
 class SessionResponse(BaseModel):
     session_token: str
     user_id: UUID
     nickname: str
+    is_guest: bool = True
+    username: Optional[str] = None
+    email: Optional[str] = None
     created_at: datetime
     
     class Config:
@@ -32,6 +44,9 @@ class SessionResponse(BaseModel):
 class ProfileResponse(BaseModel):
     user_id: UUID
     nickname: str
+    is_guest: bool = True
+    username: Optional[str] = None
+    email: Optional[str] = None
     total_swipes: int
     total_likes: int
     total_dislikes: int

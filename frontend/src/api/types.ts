@@ -14,12 +14,18 @@ export interface Session {
   session_token: string;
   user_id: string;
   nickname: string;
+  is_guest: boolean;
+  username?: string | null;
+  email?: string | null;
   created_at: string;
 }
 
 export interface Profile {
   user_id: string;
   nickname: string;
+  is_guest?: boolean;
+  username?: string | null;
+  email?: string | null;
   total_swipes: number;
   total_likes: number;
   total_dislikes: number;

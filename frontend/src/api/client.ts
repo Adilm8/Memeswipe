@@ -12,7 +12,16 @@ async function fetchWithSession<T = any>(endpoint: string, options: RequestInit 
   const response = await fetch(url, { ...options, headers });
   
   if (!response.ok) {
-    throw new Error(`API Error: ${response.statusText}`);
+    let errorMsg = response.statusText || 'Request failed';
+    try {
+      const errData = await response.json();
+      if (errData && errData.detail) {
+        errorMsg = typeof errData.detail === 'string' ? errData.detail : JSON.stringify(errData.detail);
+      }
+    } catch {
+      // Keep statusText or fallback
+    }
+    throw new Error(errorMsg);
   }
   
   if (response.status === 204) {

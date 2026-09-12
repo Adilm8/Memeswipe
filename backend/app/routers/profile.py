@@ -39,6 +39,9 @@ async def get_profile(
     return ProfileResponse(
         user_id=user.id,
         nickname=user.nickname,
+        is_guest=user.is_guest,
+        username=user.username,
+        email=user.email,
         total_swipes=total_swipes,
         total_likes=total_likes,
         total_dislikes=total_dislikes,

@@ -2,6 +2,7 @@ from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, U
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 import uuid
+from typing import Optional
 from datetime import datetime, timezone
 from app.database import Base
 
@@ -31,6 +32,10 @@ class GuestUser(Base):
     id: Mapped[uuid.UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     session_token: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
     nickname: Mapped[str] = mapped_column(String, nullable=False)
+    username: Mapped[Optional[str]] = mapped_column(String, unique=True, index=True, nullable=True)
+    email: Mapped[Optional[str]] = mapped_column(String, unique=True, nullable=True)
+    password_hash: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    is_guest: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     
     swipes = relationship("UserSwipe", back_populates="user", cascade="all, delete-orphan")

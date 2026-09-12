@@ -30,34 +30,35 @@ async def get_current_user(
         raise HTTPException(status_code=401, detail="Invalid session token")
     return user
 
+def to_session_response(user: GuestUser) -> SessionResponse:
+    return SessionResponse(
+        session_token=user.session_token,
+        user_id=user.id,
+        nickname=user.nickname,
+        is_guest=user.is_guest,
+        username=user.username,
+        email=user.email,
+        created_at=user.created_at
+    )
+
 @router.post("", response_model=SessionResponse)
 async def create_session(db: AsyncSession = Depends(get_db)):
     token = str(uuid.uuid4())
     nickname = f"{random.choice(ADJECTIVES)}{random.choice(NOUNS)}{random.randint(100, 999)}"
     
-    user = GuestUser(session_token=token, nickname=nickname)
+    user = GuestUser(session_token=token, nickname=nickname, is_guest=True)
     db.add(user)
     await db.commit()
     await db.refresh(user)
     
-    return SessionResponse(
-        session_token=user.session_token,
-        user_id=user.id,
-        nickname=user.nickname,
-        created_at=user.created_at
-    )
+    return to_session_response(user)
 
 @router.get("/me", response_model=SessionResponse)
 async def get_current_session(
     user: GuestUser = Depends(get_current_user),
 ):
     """Validate current session via X-Session-Token header."""
-    return SessionResponse(
-        session_token=user.session_token,
-        user_id=user.id,
-        nickname=user.nickname,
-        created_at=user.created_at
-    )
+    return to_session_response(user)
 
 @router.get("/{token}", response_model=SessionResponse)
 async def get_session(token: str, db: AsyncSession = Depends(get_db)):
@@ -66,9 +67,5 @@ async def get_session(token: str, db: AsyncSession = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="Session not found")
     
-    return SessionResponse(
-        session_token=user.session_token,
-        user_id=user.id,
-        nickname=user.nickname,
-        created_at=user.created_at
-    )
+    return to_session_response(user)
+

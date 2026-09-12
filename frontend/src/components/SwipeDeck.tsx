@@ -170,11 +170,9 @@ export default function SwipeDeck() {
     <div className="relative w-full h-full flex flex-col items-center justify-between p-2 sm:p-3 md:p-4 overflow-hidden">
       {/* Tinder Top Watermark Logo */}
       <div className="flex items-center gap-1.5 select-none opacity-40 hover:opacity-80 transition-opacity mb-0.5 flex-none">
-        <div className="w-5 h-5 rounded-lg bg-gradient-to-tr from-[#fe3c72] to-[#ff655b] flex items-center justify-center text-[10px] text-white">
-          🔥
-        </div>
+        <img src="/favicon-32x32.png" alt="Memeswipe" className="w-5 h-5 object-contain" />
         <span className="font-bold text-[11px] tracking-wider uppercase text-slate-400">
-          MemeSwipe Discover
+          Memeswipe Discover
         </span>
       </div>
 

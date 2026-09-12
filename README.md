@@ -1,6 +1,6 @@
-# 🔥 MemeSwipe — Tinder for Memes
+# 🐸 Memeswipe
 
-Swipe through memes like Tinder. Like them, save them, and discover people who share your sense of humor.
+Swipe through memes, like them, save them, and discover people who share your sense of humor.
 
 ![MemeSwipe](https://img.shields.io/badge/MemeSwipe-v1.0-ff6b6b?style=for-the-badge&logo=react&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)

@@ -174,18 +174,18 @@ export default function Layout() {
               session?.is_guest ? 'bg-amber-400' : 'bg-emerald-400'
             }`} />
           </div>
-          <span className="font-bold text-xs text-slate-800 truncate max-w-[90px] sm:max-w-[130px]">
+          <span className="font-bold text-xs text-slate-800 truncate max-w-[65px] xs:max-w-[90px] sm:max-w-[130px]">
             {displayName}
           </span>
         </button>
 
-        {/* Center: MemeSwipe Logo / Direct link to Swipe */}
+        {/* Center: Memeswipe Logo / Direct link to Swipe */}
         <button 
           onClick={() => navigate('/')}
-          className="flex items-center gap-1.5 font-extrabold text-base tracking-tight bg-gradient-to-r from-[#fe3c72] via-[#ff655b] to-[#ff7854] bg-clip-text text-transparent hover:opacity-90 transition-opacity"
+          className="flex items-center gap-1 font-extrabold text-sm sm:text-base tracking-tight bg-gradient-to-r from-[#fe3c72] via-[#ff655b] to-[#ff7854] bg-clip-text text-transparent hover:opacity-90 transition-opacity flex-none"
         >
-          <span className="text-base">🔥</span>
-          <span>MemeSwipe</span>
+          <img src="/favicon-32x32.png" alt="Memeswipe" className="w-5 h-5 object-contain flex-none" />
+          <span>Memeswipe</span>
         </button>
 
         {/* Right: Quick Navigation Tabs */}
@@ -334,12 +334,12 @@ export default function Layout() {
             )}
           >
             <div className={clsx(
-              "w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-transform group-hover:scale-105 shadow-2xs flex-none",
+              "w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 shadow-2xs flex-none p-1.5",
               isSwipingRoute
-                ? "bg-gradient-to-tr from-[#fe3c72] to-[#ff655b] text-white"
-                : "bg-white border-2 border-[#fe3c72] text-[#fe3c72]"
+                ? "bg-gradient-to-tr from-[#fe3c72] to-[#ff655b]"
+                : "bg-white border-2 border-[#fe3c72]"
             )}>
-              🔥
+              <img src="/favicon-32x32.png" alt="Memeswipe" className="w-full h-full object-contain" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">

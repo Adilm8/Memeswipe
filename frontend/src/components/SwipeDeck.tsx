@@ -10,7 +10,7 @@ import { useSwipe } from '@/hooks/useSwipe';
 import { useSession } from '@/hooks/useSession';
 import { fetchSaved } from '@/api/memes';
 import { SavedMeme, Meme } from '@/api/types';
-import { Loader2, Sparkles, RotateCcw, ArrowRight, Bookmark, Command } from 'lucide-react';
+import { Loader2, Sparkles, RotateCcw, ArrowRight, Bookmark, Command, Maximize2 } from 'lucide-react';
 
 export default function SwipeDeck() {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ export default function SwipeDeck() {
   const [showMatches, setShowMatches] = useState(false);
   const [hasShownMatches, setHasShownMatches] = useState(() => localStorage.getItem('matches_shown') === 'true');
   const [savedMemes, setSavedMemes] = useState<SavedMeme[]>([]);
-  const [previewMeme, setPreviewMeme] = useState<Meme | null>(null);
+  const [enlargedMeme, setEnlargedMeme] = useState<Meme | null>(null);
 
   const cardRefs = useRef<Record<string, any>>({});
   const isSwipingRef = useRef(false);
@@ -78,7 +78,7 @@ export default function SwipeDeck() {
     }
   }, [currentMeme, onSwipe, removeMeme]);
 
-  // Toggle save/unsave for current meme
+  // Toggle save/unsave for a meme
   const toggleSave = useCallback(async (meme: Meme) => {
     const isCurrentlySaved = savedIds.has(meme.id);
 
@@ -106,10 +106,15 @@ export default function SwipeDeck() {
     }
   }, [savedIds, handleSave, handleUnsave]);
 
-  // Keyboard navigation (Arrow keys + S)
+  // Keyboard navigation (Arrow keys, S to save, Space/Enter to zoom)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) {
+        return;
+      }
+
+      // If modal is open, let modal handle its own keys (Escape, left/right inside modal)
+      if (enlargedMeme) {
         return;
       }
 
@@ -124,12 +129,17 @@ export default function SwipeDeck() {
         if (currentMeme) {
           toggleSave(currentMeme);
         }
+      } else if (e.key === ' ' || e.key === 'Enter' || e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (currentMeme) {
+          setEnlargedMeme(currentMeme);
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [triggerSwipe, toggleSave, currentMeme]);
+  }, [triggerSwipe, toggleSave, currentMeme, enlargedMeme]);
 
   const isCurrentSaved = currentMeme ? savedIds.has(currentMeme.id) : false;
 
@@ -161,6 +171,10 @@ export default function SwipeDeck() {
                   <span className="text-slate-500">/</span>
                   <kbd className="px-1.5 py-1 bg-slate-800 rounded border border-slate-700 font-mono text-[11px] text-amber-400 font-semibold">S</kbd>
                 </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-300">Enlarge Meme</span>
+                <kbd className="px-2 py-1 bg-slate-800 rounded border border-slate-700 font-mono text-[11px] text-blue-400 font-semibold">Space</kbd>
               </div>
             </div>
           </div>
@@ -254,7 +268,7 @@ export default function SwipeDeck() {
                 onCardLeftScreen={() => onCardLeftScreen(meme.id)}
                 preventSwipe={['up', 'down']}
               >
-                <SwipeCard meme={meme} />
+                <SwipeCard meme={meme} onEnlarge={(m) => setEnlargedMeme(m)} />
               </TinderCard>
             ))}
 
@@ -290,6 +304,12 @@ export default function SwipeDeck() {
               <span className="flex items-center gap-1">
                 <kbd className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 font-mono text-[9px] text-slate-300">→</kbd> Like
               </span>
+              <button
+                onClick={() => currentMeme && setEnlargedMeme(currentMeme)}
+                className="flex items-center gap-0.5 text-blue-400 hover:text-blue-300 ml-1"
+              >
+                <Maximize2 size={10} /> Enlarge
+              </button>
             </div>
           </div>
         </div>
@@ -320,7 +340,7 @@ export default function SwipeDeck() {
                 {savedMemes.slice(0, 4).map((s) => (
                   <div
                     key={s.id}
-                    onClick={() => setPreviewMeme(s.meme)}
+                    onClick={() => setEnlargedMeme(s.meme)}
                     className="flex items-center gap-3 p-2 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 rounded-xl cursor-pointer transition-all hover:scale-[1.02]"
                   >
                     <img 
@@ -342,10 +362,15 @@ export default function SwipeDeck() {
 
       {showMatches && <MatchesModal onClose={() => setShowMatches(false)} />}
       
-      {/* Quick preview modal for saved meme clicked from sidebar */}
+      {/* Fullscreen Enlarged Modal for any meme (Swipe page or Saved) */}
       <MemeModal 
-        meme={previewMeme} 
-        onClose={() => setPreviewMeme(null)} 
+        meme={enlargedMeme} 
+        onClose={() => setEnlargedMeme(null)}
+        onUnsave={(id) => {
+          if (enlargedMeme && savedIds.has(id)) {
+            toggleSave(enlargedMeme);
+          }
+        }}
       />
     </div>
   );

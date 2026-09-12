@@ -11,6 +11,10 @@ async function fetchWithSession<T = any>(endpoint: string, options: RequestInit 
   const url = `${API_URL}${endpoint}`;
   const response = await fetch(url, { ...options, headers });
   
+  if (response.status === 401 && endpoint !== '/api/auth/login') {
+    localStorage.removeItem('session_token');
+  }
+
   if (!response.ok) {
     let errorMsg = response.statusText || 'Request failed';
     try {

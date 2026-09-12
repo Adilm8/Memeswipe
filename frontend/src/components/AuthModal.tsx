@@ -227,8 +227,37 @@ export default function AuthModal() {
             )}
           </button>
 
+          {/* Quick Demo Logins */}
+          {isLogin && (
+            <div className="pt-2.5 border-t border-slate-100 space-y-2">
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center">
+                Quick Demo Logins (pw: password123)
+              </div>
+              <div className="grid grid-cols-2 gap-1.5">
+                {[
+                  { name: 'Funky_Monkey', desc: 'Local User' },
+                  { name: 'Gloomy', desc: 'Friend' },
+                  { name: 'nostalgia_dave', desc: 'Nostalgic AI' },
+                  { name: 'history_nerd_elena', desc: 'History AI' },
+                ].map(demo => (
+                  <button
+                    key={demo.name}
+                    type="button"
+                    onClick={() => {
+                      setUsername(demo.name);
+                      setPassword('password123');
+                    }}
+                    className="py-1.5 px-2 bg-slate-50 hover:bg-rose-50 hover:text-[#fe3c72] hover:border-rose-200 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 truncate transition-all text-center cursor-pointer active:scale-95"
+                  >
+                    {demo.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Continue as Guest option */}
-          <div className="pt-2 text-center">
+          <div className="pt-1 text-center">
             <button
               type="button"
               onClick={continueAsGuest}

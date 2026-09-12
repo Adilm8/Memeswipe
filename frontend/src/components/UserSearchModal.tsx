@@ -19,7 +19,7 @@ export default function UserSearchModal({ isOpen, onClose, onOpenChat }: Props) 
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const [addingId, setAddingId] = useState<string | null>(null);
 
-  // Debounced search
+  // Debounced search or initial load of community members
   useEffect(() => {
     if (!isOpen) {
       setQuery('');
@@ -28,19 +28,13 @@ export default function UserSearchModal({ isOpen, onClose, onOpenChat }: Props) 
     }
 
     const trimmed = query.trim();
-    if (!trimmed) {
-      setResults([]);
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
     const timer = setTimeout(() => {
       searchUsers(trimmed)
-        .then((res) => setResults(res))
+        .then((res) => setResults(res || []))
         .catch((err) => console.error("Failed to search users:", err))
         .finally(() => setLoading(false));
-    }, 280);
+    }, trimmed ? 280 : 0);
 
     return () => clearTimeout(timer);
   }, [query, isOpen]);
@@ -130,24 +124,22 @@ export default function UserSearchModal({ isOpen, onClose, onOpenChat }: Props) 
                 <Loader2 size={24} className="animate-spin text-[#fe3c72]" />
                 <span className="text-xs font-medium">Scanning comedy frequencies...</span>
               </div>
-            ) : query.trim() && results.length === 0 ? (
+            ) : results.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-44 text-slate-400 text-center px-4">
                 <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-xl mb-2">
                   🔍
                 </div>
                 <p className="text-xs font-semibold text-slate-600">No users found</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Try searching for elena, dave, vitalik, sunny, or zoe</p>
-              </div>
-            ) : !query.trim() ? (
-              <div className="flex flex-col items-center justify-center h-44 text-slate-400 text-center px-4">
-                <div className="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center text-xl mb-2 text-[#fe3c72]">
-                  ✨
-                </div>
-                <p className="text-xs font-semibold text-slate-700">Search for friends</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Connect with meme creators and humor twins to share jokes directly</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Try searching for elena, dave, funky, sunny, or gloomy</p>
               </div>
             ) : (
-              results.map((user) => {
+              <>
+                {!query.trim() && (
+                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-1 pb-1">
+                    Featured Community & Friends ({results.length})
+                  </div>
+                )}
+                {results.map((user) => {
                 const isFriend = user.is_friend || addedIds.has(user.user_id);
                 const isAdding = addingId === user.user_id;
 
@@ -222,8 +214,9 @@ export default function UserSearchModal({ isOpen, onClose, onOpenChat }: Props) 
                     </div>
                   </div>
                 );
-              })
-            )}
+              })}
+            </>
+          )}
           </div>
         </motion.div>
       </div>

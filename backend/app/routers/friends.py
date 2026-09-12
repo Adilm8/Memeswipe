@@ -30,22 +30,35 @@ def compute_compat_percent(set_a: set, set_b: set) -> int:
 
 @router.get("/search", response_model=List[UserSearchResult])
 async def search_users(
-    q: str = Query("", min_length=1),
+    q: str = Query("", min_length=0),
     db: AsyncSession = Depends(get_db),
     current_user: GuestUser = Depends(get_current_user)
 ):
-    query_str = f"%{q.strip()}%"
-    users_res = await db.execute(
-        select(GuestUser)
-        .where(
-            GuestUser.id != current_user.id,
-            or_(
-                GuestUser.username.ilike(query_str),
-                GuestUser.nickname.ilike(query_str)
+    trimmed = q.strip()
+    if trimmed:
+        query_str = f"%{trimmed}%"
+        users_res = await db.execute(
+            select(GuestUser)
+            .where(
+                GuestUser.id != current_user.id,
+                or_(
+                    GuestUser.username.ilike(query_str),
+                    GuestUser.nickname.ilike(query_str)
+                )
             )
+            .limit(25)
         )
-        .limit(20)
-    )
+    else:
+        # If no query provided, return registered users / featured community members
+        users_res = await db.execute(
+            select(GuestUser)
+            .where(
+                GuestUser.id != current_user.id,
+                GuestUser.is_guest == False
+            )
+            .order_by(GuestUser.created_at.desc())
+            .limit(25)
+        )
     users = users_res.scalars().all()
     if not users:
         return []

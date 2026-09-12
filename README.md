@@ -1,269 +1,273 @@
-# 🐸 Memeswipe
+# 🔥 MemeSwipe (Tinder для мемов)
 
-Swipe through memes, like them, save them, and discover people who share your sense of humor.
+> **Интерактивное веб-приложение для свайпа мемов, подбора «юмористических близнецов» и AI-анализа чувства юмора.**  
+> Разработано в рамках вступительного/тестового задания **nFactorial School**.
 
-![MemeSwipe](https://img.shields.io/badge/MemeSwipe-v1.0-ff6b6b?style=for-the-badge&logo=react&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-
-## 📋 Project Description
-
-**MemeSwipe** is a web application where users swipe through memes in a Tinder-like interface. Swipe right to like, left to dislike. Liked memes are tracked, saved memes go into a personal collection, and after liking 10+ memes, the app finds "humor matches" — other users with similar taste.
-
-An AI-powered humor analyst (powered by Google Gemini) can analyze your meme preferences, explain why memes are funny, and chat about your humor profile.
-
-### Key Features
-
-- 🃏 **Swipe Feed** — Tinder-style card swiping with spring physics animations
-- ❤️ **Like / Dislike / Save** — Three distinct actions per meme
-- 📊 **Profile & Stats** — Track your total swipes, likes, dislikes, save ratio
-- 👯 **Humor Matches** — Jaccard similarity algorithm finds users with overlapping taste
-- 🤖 **AI Humor Analyst** — Chat with an AI that analyzes your meme preferences (Google Gemini)
-- 🎨 **Dark Theme UI** — Beautiful mobile-first design with smooth animations
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-memeswipe.up.railway.app-00C7B7?style=for-the-badge&logo=railway&logoColor=white)](https://memeswipe.up.railway.app)
+[![API Docs](https://img.shields.io/badge/Swagger-OpenAPI%20Docs-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)](https://memeswipe.up.railway.app/docs)
+[![Frontend](https://img.shields.io/badge/React%2018-Vite%20%7C%20TS-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Backend](https://img.shields.io/badge/FastAPI-Python%203.12-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Database](https://img.shields.io/badge/PostgreSQL-16%20Async-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![AI Engine](https://img.shields.io/badge/Google%20Gemini-2.0%20Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 
 ---
 
-## 🚀 Installation & Setup
+## 🌐 Рабочий деплой (Live Demo)
 
-### Prerequisites
+- **Production Веб-приложение**: [https://memeswipe.up.railway.app](https://memeswipe.up.railway.app)
+- **Интерактивная документация API (Swagger UI)**: [https://memeswipe.up.railway.app/docs](https://memeswipe.up.railway.app/docs)
+- **База данных**: Managed PostgreSQL на Railway.
+- **Статус**: Полностью развёрнут и протестирован. Данные, сессии пользователей, чаты и статистика персистентны и сохраняются между перезагрузками.
 
-- **Python 3.12+**
-- **Node.js 18+** & **npm**
-- **PostgreSQL 15+** (running locally or remote connection string)
+---
 
-### 1. Clone the Repository
+## 📑 Содержание
+
+1. [Краткое описание проекта](#1-краткое-описание-проекта)
+2. [Выполнение всех уровней ТЗ](#2-выполнение-всех-уровней-тз)
+3. [Инструкции по установке и локальному запуску](#3-инструкции-по-установке-и-локальному-запуску)
+4. [Описание процесса проектирования и разработки](#4-описание-процесса-проектирования-и-разработки)
+5. [Уникальные подходы и методологии](#5-уникальные-подходы-и-методологии)
+6. [Обсуждение компромиссов (Trade-offs)](#6-обсуждение-компромиссов-trade-offs)
+7. [Описание известных ошибок и ограничений](#7-описание-известных-ошибок-и-ограничений)
+8. [Почему выбран этот технический стек](#8-почему-выбран-этот-технический-стек)
+9. [Креативные расширения сверх ТЗ](#9-креативные-расширения-сверх-тз)
+
+---
+
+## 1. Краткое описание проекта
+
+**MemeSwipe** — это сервис для знакомства с мемами и людьми на основе общего чувства юмора. 
+Пользователь листает ленту мемов в формате карточек Tinder:
+- **Свайп вправо** — лайк;
+- **Свайп влево** — пропуск;
+- **Кнопка «Звезда»** — добавление в персональную коллекцию избранного.
+
+После того как пользователь лайкнет **10 мемов**, открывается вкладка **«Совпадения» (Matches)**, где математический алгоритм находит пользователей с максимальным пересечением вкусов.
+
+В приложение также встроен **AI-аналитик юмора на базе Google Gemini**, который генерирует психотип чувства юмора, объясняет шутки, подбирает мемы по текстовому запросу и поддерживает диалог.
+
+---
+
+## 2. Выполнение всех уровней ТЗ
+
+### Уровень 1 — UI-интерфейс (Web) ✅
+- [x] **Экран свайпа**: интерактивная колода карточек с физикой жестов (библиотека `react-tinder-card` + `framer-motion`).
+- [x] **Свайп вправо** — понравился, **свайп влево** — пропустить.
+- [x] **Кнопки управления**: отдельные кнопки «Лайк», «Дизлайк» и «Сохранить» для управления без жестов.
+- [x] **Экран избранного (Saved)**: галерея сохранённых мемов с возможностью просмотра и быстрого удаления.
+- [x] **Профиль пользователя**: подробная статистика (всего свайпов, лайков, дизлайков, процент одобрения, дата регистрации, био, аватар).
+- [x] **Плавные анимации**: вылет карточек, индикаторы направления свайпа («LIKE» / «NOPE»), микро-анимации нажатий кнопок.
+- [x] **Экран совпадений**: автоматически блокируется до достижения 10 лайков (с динамическим прогресс-баром `N / 10`) и открывается при выполнении условия.
+
+### Уровень 2 — Backend и API ✅
+- [x] **Хранение данных**: полноценная реляционная БД (PostgreSQL) с моделями пользователей, мемов, свайпов, закладок, дружбы и чатов.
+- [x] **API ленты**: эндпоинт `GET /api/memes/feed` выдаёт случайные мемы, исключая уже оценённые данным пользователем.
+- [x] **Учёт действий**: `POST /api/memes/{id}/swipe` (like/dislike) и `POST /api/memes/{id}/save`.
+- [x] **Алгоритм совпадений**: `GET /api/profile/matches` рассчитывает похожесть пользователей через коэффициент Жаккара (Jaccard Similarity).
+- [x] **Обработка краевых случаев и ошибок**: возврат валидных JSON-ошибок. При исчерпании мемов реализован авто-добор новых мемов с Reddit API (`/refill`) и кнопка перемешивания пропущенных мемов (`/reset-dislikes`).
+- [x] **Изоляция внешних API**: Все запросы к Reddit API и Google Gemini выполняются **исключительно с бэкенда**. Фронтенд общается только со своим защищенным API.
+
+### Уровень 3 — Деплой ✅
+- [x] **Production-хостинг**: Приложение упаковано в оптимизированный multi-stage Docker-контейнер и запущено на платформе **Railway**.
+- [x] **База данных**: Облачная PostgreSQL 16 с индексами и каскадными связями.
+- [x] **Персистентность**: Данные сессий, свайпы и профили не сбрасываются при обновлении страниц или перезапуске контейнера.
+
+### Уровень 4 — Бонус: AI/LLM-аналитик (Google Gemini) ✅
+- [x] **Анализ предпочтений**: `GET /api/ai/profile` формирует уникальный юмористический психотип (стиль юмора, ключевые категории, сильные стороны).
+- [x] **Объяснение мемов**: `POST /api/ai/explain` раскладывает контекст, культурные отсылки и punchline любого выбранного мема.
+- [x] **Поиск мемов по текстовой теме**: `POST /api/ai/suggest` подбирает и рекомендует мемы из базы по описанию ситуации или темы от пользователя.
+- [x] **Интерактивный чат с AI**: `POST /api/ai/chat` — персональный ассистент по юмору, знающий историю лайков пользователя.
+- [x] **Отказоустойчивость (Graceful Degradation)**: Если API-ключ Gemini не задан или исчерпаны лимиты, приложение не падает, а выдаёт качественные заготовленные эвристические ответы.
+
+---
+
+## 3. Инструкции по установке и локальному запуску
+
+### Вариант А: Быстрый запуск через Docker Compose (Рекомендуется)
+
+Требуется установленный **Docker Desktop**:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/memeswipe.git
-cd memeswipe
-```
+# 1. Клонируйте репозиторий
+git clone https://github.com/Adilm8/Tinder-For-Memes.git
+cd Tinder-For-Memes
 
-### 2. Backend Setup
-
-```bash
-cd backend
-
-# Create virtual environment
-python -m venv venv
-# Windows:
-venv\Scripts\activate
-# macOS/Linux:
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Configure environment
+# 2. Создайте файл окружения
 cp .env.example .env
-# Edit .env with your DATABASE_URL and optional GEMINI_API_KEY
-```
+# (Опционально) добавьте ваш GEMINI_API_KEY в .env
 
-**Create the PostgreSQL database:**
-```sql
-CREATE DATABASE memeswipe;
-```
+# 3. Запустите базу данных и бэкенд
+docker compose up -d
 
-**Run the server:**
-```bash
-uvicorn app.main:app --reload --port 8000
-```
-
-**Seed memes into the database:**
-```bash
-python seed.py
-```
-
-### 3. Frontend Setup
-
-```bash
+# 4. Запустите фронтенд
 cd frontend
-
-# Install dependencies
 npm install
-
-# Start dev server (proxies /api to localhost:8000)
 npm run dev
 ```
 
-Open **http://localhost:5173** in your browser.
+Приложение будет доступно по адресу: **`http://localhost:5173`**.
 
 ---
 
-## 🏗️ Design & Development Process
+### Вариант Б: Ручной запуск (без Docker)
 
-### Architecture Decision Records
+#### 1. Требования
+- Python 3.12+
+- Node.js 18+ и npm
+- PostgreSQL 15+
 
-#### Why FastAPI + React?
+#### 2. Бэкенд
+```bash
+cd backend
 
-| Decision | Rationale |
-|---|---|
-| **FastAPI** (backend) | Async-first Python framework. Native Pydantic validation, auto-generated OpenAPI docs, excellent performance with asyncpg. Perfect for a JSON API with multiple concurrent users. |
-| **React + Vite** (frontend) | Largest ecosystem for swipe gesture libraries (`react-tinder-card`). Vite provides instant HMR and fast builds. TypeScript ensures type safety across the API contract. |
-| **PostgreSQL** | Relational DB for structured data (users, memes, swipes). UUID primary keys, `ON CONFLICT DO NOTHING` for deduplication, efficient JOINs for the matching algorithm. |
-| **Tailwind CSS** | Utility-first CSS for rapid prototyping. Dark theme, responsive design, and consistent spacing without writing custom CSS. |
-| **framer-motion** | Production-grade animation library for React. Spring physics, `AnimatePresence` for exit animations, `whileTap` for button feedback. |
+# Создание и активация venv
+python -m venv venv
+# Windows:
+venv\Scripts\activate
+# Linux/macOS:
+source venv/bin/activate
 
-#### Why NOT Next.js?
+# Установка зависимостей
+pip install -r requirements.txt
 
-Next.js adds SSR/SSG complexity that a single-page swipe app doesn't need. Our app is purely client-side rendered with API calls — Vite's simplicity is a better fit.
+# Настройка .env
+cp .env.example .env
+# Укажите DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/memeswipe
 
-#### Why NOT Authentication?
-
-This is an MVP. Guest sessions (UUID-based) let users start swiping instantly without friction. The session token is stored in `localStorage` and validated on each API call via `X-Session-Token` header.
-
-### Meme Sourcing Strategy
-
-We use **D3vd Meme API** (`meme-api.com`) — a free, keyless API that aggregates top memes from Reddit communities:
-- `r/memes`, `r/dankmemes`, `r/wholesomememes`, `r/me_irl`
-- Quality filter: upvotes ≥ 500, not NSFW, valid image URL
-- Deduplication via `external_id` (Reddit post ID)
-- All API calls are **server-side only** (via the seeder script), never from the frontend
-
-### Matching Algorithm
-
-**Jaccard Similarity** on liked meme sets:
-
-```
-similarity(A, B) = |A ∩ B| / |A ∪ B|
+# Запуск сервера
+uvicorn app.main:app --reload --port 8000
 ```
 
-Where A = memes liked by user A, B = memes liked by user B. Users with similarity > 10% and who have liked ≥ 10 memes qualify as matches.
+#### 3. Наполнение базы данных мемами и персонажами
+В директории `backend`:
+```bash
+python seed.py
+```
+Скрипт автоматически создаст таблицы, загрузит свежие мемы из сабреддитов Reddit и создаст 28 реалистичных персонажей с историей свайпов для тестирования совпадений.
 
-### AI Integration
-
-Google Gemini (`gemini-2.0-flash`) powers the AI features:
-- **Humor Profile**: Analyzes titles and subreddits of liked memes to generate a personality summary
-- **Meme Explanation**: Explains why a specific meme is funny based on its title and context
-- **Chat**: General humor Q&A with user's swipe history as context
-- **Graceful Fallback**: If no API key is configured, mock responses are returned instead of errors
-
----
-
-## 🎯 Unique Approaches
-
-1. **Pre-seeded Database**: Instead of fetching memes on-demand (which causes latency and rate limiting), we pre-populate the database with 500+ high-quality memes. This guarantees instant card rendering during swipes.
-
-2. **Image Preloading**: The frontend preloads the next 2-3 meme images in the background, ensuring zero visual lag when swiping.
-
-3. **Guest Sessions Without Auth**: Anonymous UUID-based sessions stored in `localStorage`. Users can start swiping immediately — zero signup friction.
-
-4. **Jaccard Similarity for Matching**: A mathematically sound approach to finding "humor twins" based on overlapping liked memes, computed efficiently with SQL set operations.
-
-5. **AI Mock Fallback**: The AI service gracefully degrades when no Gemini API key is configured, returning predefined mock responses so the app remains fully functional.
+#### 4. Фронтенд
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Откройте в браузере: `http://localhost:5173`.
 
 ---
 
-## ⚖️ Trade-offs
-
-| Decision | Trade-off |
-|---|---|
-| **Guest sessions** | Users lose data if they clear `localStorage` or switch browsers. Acceptable for MVP; upgrade path: add optional email/OAuth sign-in. |
-| **Pre-seeded memes** | Initial content is finite (~500 memes). Solved by daily refresh cron job fetching new trending memes. |
-| **External image URLs** | Meme images are hosted on `i.redd.it` — if Reddit deletes a post, the image breaks. Mitigation: store a copy or validate on fetch. |
-| **Jaccard similarity** | Simple but effective. Doesn't capture meme semantics (two memes about the same topic from different subreddits aren't linked). Future: use embeddings for semantic matching. |
-| **No real-time features** | Matches are computed on-demand, not pushed via WebSocket. Users refresh to see new matches. Acceptable for MVP. |
-| **AI rate limiting** | Gemini free tier has 15 RPM limit. We cache humor profiles for 1 hour per user. Heavy usage could still hit limits. |
-
----
-
-## 🐛 Known Issues
-
-- **Session loss**: Clearing browser data or using incognito mode creates a new anonymous identity with no history.
-- **Meme depletion**: If a user swipes through all seeded memes, the feed shows "No more memes" until new content is seeded.
-- **Image loading**: Some Reddit image URLs may return 403/404 if the original post was deleted. No broken-image fallback is currently implemented.
-- **Matching cold start**: With few users, the matching algorithm may return no results. It needs a critical mass of users with overlapping liked memes.
-- **Mobile swipe conflicts**: On some mobile browsers, the swipe gesture may conflict with the browser's back/forward navigation. `preventSwipe` is set for up/down only.
-
----
-
-## 📁 Project Structure
+## 4. Описание процесса проектирования и разработки
 
 ```
-memeswipe/
-├── backend/
-│   ├── app/
-│   │   ├── main.py              # FastAPI app entry point
-│   │   ├── config.py            # Pydantic settings
-│   │   ├── database.py          # Async SQLAlchemy engine
-│   │   ├── models.py            # ORM models (Meme, User, Swipe, Save)
-│   │   ├── schemas.py           # Pydantic request/response models
-│   │   ├── routers/
-│   │   │   ├── session.py       # Guest session endpoints
-│   │   │   ├── memes.py         # Feed, swipe, save endpoints
-│   │   │   ├── profile.py       # Stats & matches endpoints
-│   │   │   └── ai.py            # AI humor analyst endpoints
-│   │   └── services/
-│   │       ├── ai_service.py    # Gemini API integration
-│   │       ├── matching.py      # Jaccard similarity algorithm
-│   │       └── meme_seeder.py   # Meme ingestion from API
-│   ├── alembic/                 # Database migrations
-│   ├── seed.py                  # Standalone seeding script
-│   ├── Dockerfile               # Container config
-│   ├── requirements.txt
-│   └── render.yaml              # Render.com deployment blueprint
-│
-├── frontend/
-│   ├── src/
-│   │   ├── api/                 # Typed API client functions
-│   │   ├── components/          # React components (SwipeDeck, Layout, etc.)
-│   │   ├── context/             # Session context provider
-│   │   ├── hooks/               # Custom hooks (useMemes, useSwipe, useSession)
-│   │   └── pages/               # Route pages (Swipe, Saved, Profile, Matches, AI)
-│   ├── index.html
-│   ├── vite.config.ts
-│   ├── tailwind.config.js
-│   └── vercel.json              # Vercel deployment config
-│
-├── .gitignore
-└── README.md
+┌─────────────────────────────────────────────────────────────┐
+│                    Frontend (React 18 + TS)                 │
+│      Swipe Deck  │  Saved Gallery  │  Social Chat  │  AI    │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ HTTP / JSON (X-Session-Token)
+┌──────────────────────────────▼──────────────────────────────┐
+│                    FastAPI Backend (Async)                  │
+│   Auth/Session  │  Memes Engine  │  Matching  │  AI Gemini  │
+└──────────────┬───────────────────────────────┬──────────────┘
+               │ SQLAlchemy (asyncpg)          │ HTTPX (Server-only)
+┌──────────────▼──────────────┐ ┌──────────────▼──────────────┐
+│       PostgreSQL 16         │ │      External Services      │
+│  Users, Memes, Swipes,      │ │   • Reddit API (memes)      │
+│  Saves, Friends, Messages   │ │   • Google Gemini 2.0 Flash │
+└─────────────────────────────┘ └─────────────────────────────┘
 ```
 
----
-
-## 🌐 Tech Stack Summary
-
-| Layer | Technology | Why |
-|---|---|---|
-| Frontend | React 18 + Vite + TypeScript | Best swipe library ecosystem, fast dev experience |
-| Styling | Tailwind CSS + framer-motion | Rapid dark-theme design + polished animations |
-| Swipe Gestures | react-tinder-card | Battle-tested Tinder-style card physics |
-| Backend | FastAPI (Python 3.12) | Async-first, auto-docs, Pydantic validation |
-| Database | PostgreSQL + SQLAlchemy 2.0 | Relational queries, UUID PKs, ON CONFLICT dedup |
-| AI | Google Gemini (gemini-2.0-flash) | Free tier (15 RPM), fast inference, good humor understanding |
-| Meme Source | D3vd Meme API (meme-api.com) | Free, keyless, curated Reddit memes |
-| Deploy (FE) | Vercel | Free static hosting, instant deploys, global CDN |
-| Deploy (BE) | Render | Free Python hosting + managed PostgreSQL |
+1. **Архитектурный подход**: 
+   - Клиент-серверная модель с разделением ответственности (SoC).
+   - Фронтенд — чистое SPA, которое отвечает только за отображение и реактивность.
+   - Бэкенд — асинхронный REST API на FastAPI, инкапсулирующий всю бизнес-логику, обращение к БД и интеграции со сторонними сервисами.
+2. **Модель данных и нормализация**:
+   - `GuestUser`: поддерживает гибридный режим (как анонимный гость по токену, так и зарегистрированный пользователь с паролем, аватаркой и био).
+   - `Meme`: дедупликация по `external_id` (Reddit ID поста).
+   - `UserSwipe`: составной уникальный ключ `(user_id, meme_id)`, предотвращающий повторные оценки одного мема.
+   - `Friendship` и `ChatMessage`: поддержка социальных связей и персонального обмена сообщениями с прикреплением карточек мемов.
+3. **Алгоритм поиска совпадений (Humor Matching)**:
+   Основан на **коэффициенте Жаккара** между множествами лайкнутых мемов:
+   $$\text{Jaccard Similarity}(A, B) = \frac{|A \cap B|}{|A \cup B|}$$
+   Вычисляется на уровне базы данных эффективными реляционными выборками (`INTERSECT` / `UNION`), выдавая процент совпадения и список общих мемов.
 
 ---
 
-## 🚀 Deployment
+## 5. Уникальные подходы и методологии
 
-### Frontend → Vercel
-
-1. Connect your GitHub repo to [Vercel](https://vercel.com)
-2. Set root directory to `frontend/`
-3. Build command: `npm run build`
-4. Output directory: `dist/`
-5. Update `vercel.json` rewrite to point to your Render backend URL
-
-### Backend → Render
-
-1. Connect your GitHub repo to [Render](https://render.com)
-2. Use the `render.yaml` blueprint (Infrastructure as Code)
-3. Or manually create a Web Service pointing to `backend/Dockerfile`
-4. Add environment variables: `DATABASE_URL`, `GEMINI_API_KEY`, `CORS_ORIGINS`
-5. Create a PostgreSQL database and link it
-
-### Post-Deploy Checklist
-
-- [ ] Run `python seed.py` on the deployed backend to populate memes
-- [ ] Verify all API endpoints at `https://your-backend.onrender.com/docs`
-- [ ] Test swipe flow end-to-end on the deployed frontend
-- [ ] Confirm data persists across page refreshes
+1. **Zero-Friction Onboarding (Гибридная сессия)**:
+   Пользователю не нужно регистрироваться, чтобы оценить приложение. При первом входе автоматически генерируется анонимная сессия (`X-Session-Token`), привязанная к `localStorage`. При желании пользователь может в 1 клик зарегистрировать аккаунт, сохранив всю историю свайпов.
+2. **Непрерывный поток мемов (Auto-Refill & Reshuffle)**:
+   Если у активного пользователя заканчиваются неразмеченные мемы в базе, сервер автоматически запрашивает свежие мемы из разных сабреддитов в фоне (`/api/memes/refill`). А если просмотрена вся база — доступна функция перемешивания пропущенных мемов (`/reset-dislikes`).
+3. **Предзагрузка изображений (Card Preloading)**:
+   Фронтенд фоново кэширует изображения следующих 2–3 карточек колоды, благодаря чему при быстром свайпе отсутствуют белые экраны и мерцания картинок.
+4. **Синтетическая экосистема юмора для Cold Start**:
+   Чтобы алгоритм совпадений работал сразу после деплоя, был написан генератор 7 архетипов юмора («Wholesome Optimist», «Dark Irony Enjoyer», «History Buff», «Dank Specialist» и др.) с 28 детальными аккаунтами, сгенерировавшими свыше 1,600 органичных оценок.
+5. **Unified Multi-Stage Docker**:
+   В production бэкенд и фронтенд собираются в едином контейнере: Node.js компилирует статику Vite, а FastAPI раздаёт её и обрабатывает `/api/*`, устраняя проблемы CORS и экономя ресурсы бесплатного тарифа.
 
 ---
 
-## 📜 License
+## 6. Обсуждение компромиссов (Trade-offs)
 
-MIT
+| Принятое решение | Плюсы | Минусы / Компромисс | Способ компенсации |
+|---|---|---|---|
+| **Коэффициент Жаккара для матчинга** | Мгновенный расчёт на SQL, математическая прозрачность | Не учитывает синонимичность мемов на одну тему | В будущем: векторные эмбеддинги мемов через OpenAI/Gemini Embeddings |
+| **Хранение URL картинок Reddit** | Нет расходов на S3/Cloudinary storage | Reddit-ссылки могут со временем устаревать (404/403) | Реализован `img onError` плейсхолдер и серверная фильтрация невалидных форматов |
+| **Long Polling для сообщений** | Минимальная нагрузка и простота развёртывания без WebSocket-инфраструктуры | Небольшая задержка обновления (1.5-2 сек) | Оптимизировано для мобильных сетей; при масштабировании легко переводится на WebSocket |
+| **Единый контейнер на Railway** | Бесплатный лимит покрывает и фронт, и бэк, нулевой оверхед по CORS | Бэкенд тратит немного CPU на раздачу статики | Кэширование статических файлов в браузере, использование CDN для внешних ресурсов |
+
+---
+
+## 7. Описание известных ошибок и ограничений
+
+1. **Зависимость от Reddit API**: Сторонний сервис агрегации `meme-api.com` периодически может отвечать с задержкой или кратковременно отдавать 502/504 при высокой нагрузке Reddit. Сервер обрабатывает это без сбоя приложения, используя уже имеющийся пул мемов в базе.
+2. **Очистка localStorage в браузере**: Если пользователь не создал постоянный аккаунт (логин/пароль) и очистил кэш браузера или зашел в режиме инкогнито, создаётся новая гостевая сессия. Решение: регистрация аккаунта в профиле.
+3. **Ограничение бесплатного тарифа Gemini (15 RPM)**: При активных одновременных запросах к AI может сработать rate-limit Google. На этот случай внедрен фоллбэк с информативными mock-ответами.
+
+---
+
+## 8. Почему выбран этот технический стек
+
+- **FastAPI (Python)**:
+  - Нативная асинхронность (`async/await`), критически важная для сетевых вызовов (LLM, внешние API мемов, база данных).
+  - Строгая типизация через **Pydantic** с автоматической валидацией входящих данных.
+  - Автогенерация интерактивной документации Swagger/OpenAPI прямо «из коробки».
+- **React 18 + Vite + TypeScript**:
+  - Высочайшая скорость сборки (Vite HMR).
+  - Зрелая экосистема библиотек для тач-жестов и свайпов (`react-tinder-card`).
+  - Строгая типизация API-клиента исключает рассинхронизацию контрактов данных.
+- **PostgreSQL + SQLAlchemy 2.0**:
+  - Надёжные ACID-транзакции для учёта свайпов.
+  - Нативная поддержка `UUID` и эффективных операций над множествами (`INTERSECT`, `UNION`) для алгоритма схожести.
+  - Возможность легко масштабироваться и подключать расширения (например, `pgvector` в перспективе).
+- **Tailwind CSS + Framer Motion**:
+  - Лаконичный дизайн без громоздких CSS-файлов.
+  - Аппаратное ускорение анимаций карточек, обеспечивающее стабильные 60 FPS на мобильных устройствах.
+- **Google Gemini 2.0 Flash**:
+  - Оптимальный баланс высокой скорости генерации (~0.5 сек) и глубокого понимания контекста и юмора.
+
+---
+
+## 9. Креативные расширения сверх ТЗ
+
+В соответствии с примечанием в задании (*«Вы не ограничены в своей креативности... покажите свою креативность!»*), проект был существенно расширен:
+
+1. 👥 **Полноценный Социальный хаб (Social Lounge)**:
+   - Поиск пользователей по никнейму/био с динамическим расчетом совместимости юмора.
+   - Система добавления в друзья.
+   - Личные сообщения (Direct Chat) с возможностью **отправлять карточки мемов прямо в диалог**.
+2. 🤖 **Интерактивные персонажи с AI**:
+   - Симуляция общения с архетипами (например, ретро-мемер Дейв `nostalgia_dave` или любительница истории Елена `history_nerd_elena`), которые отвечают на сообщения в своём характерном стиле.
+3. ✏️ **Кастомизация профиля**:
+   - Пользователь может менять свой аватар, никнейм и био.
+4. 🛠 **Административный центр синхронизации БД**:
+   - Специальные эндпоинты `/api/admin/seed` и `/api/admin/restore-local` позволяют в 1 клик восстановить базу данных в облаке.
+
+---
+
+## 👨‍💻 Автор
+
+- **Автор**: Адил Манатов
+- **GitHub**: [@Adilm8](https://github.com/Adilm8)
+- **Репозиторий проекта**: [https://github.com/Adilm8/Tinder-For-Memes](https://github.com/Adilm8/Tinder-For-Memes) (перенаправляется на [Memeswipe](https://github.com/Adilm8/Memeswipe))
+- **Live URL**: [https://memeswipe.up.railway.app](https://memeswipe.up.railway.app)

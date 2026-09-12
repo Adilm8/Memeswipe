@@ -18,3 +18,5 @@ async def init_db():
         await conn.execute(text("ALTER TABLE guest_users ADD COLUMN IF NOT EXISTS email VARCHAR UNIQUE;"))
         await conn.execute(text("ALTER TABLE guest_users ADD COLUMN IF NOT EXISTS password_hash VARCHAR;"))
         await conn.execute(text("ALTER TABLE guest_users ADD COLUMN IF NOT EXISTS is_guest BOOLEAN NOT NULL DEFAULT TRUE;"))
+        await conn.execute(text("ALTER TABLE guest_users ADD COLUMN IF NOT EXISTS bio VARCHAR;"))
+        await conn.execute(text("ALTER TABLE guest_users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR;"))

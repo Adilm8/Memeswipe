@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { Session, Profile } from '@/api/types';
 import { createSession, validateSession } from '@/api/session';
-import { fetchProfile } from '@/api/profile';
+import { fetchProfile, updateProfile as apiUpdateProfile, ProfileUpdateParams } from '@/api/profile';
 import { loginUser, registerUser, createGuestSession, LoginParams, RegisterParams } from '@/api/auth';
 
 interface SessionContextType {
@@ -11,6 +11,7 @@ interface SessionContextType {
   likesCount: number;
   incrementLikes: () => void;
   refreshProfile: () => Promise<void>;
+  updateProfile: (params: ProfileUpdateParams) => Promise<Profile>;
   login: (params: LoginParams) => Promise<void>;
   register: (params: RegisterParams) => Promise<void>;
   logout: () => Promise<void>;
@@ -131,6 +132,18 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
+  const updateProfile = async (params: ProfileUpdateParams) => {
+    const updated = await apiUpdateProfile(params);
+    setProfile(updated);
+    setSession(prev => prev ? {
+      ...prev,
+      nickname: updated.nickname,
+      bio: updated.bio,
+      avatar_url: updated.avatar_url,
+    } : prev);
+    return updated;
+  };
+
   return (
     <SessionContext.Provider value={{ 
       session, 
@@ -139,6 +152,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       likesCount, 
       incrementLikes, 
       refreshProfile: loadProfile,
+      updateProfile,
       login,
       register,
       logout,

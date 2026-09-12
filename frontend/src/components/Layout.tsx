@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Bookmark, User, Heart, Sparkles, LogIn, LogOut, Flame } from 'lucide-react';
+import { Bookmark, User, Heart, Sparkles, LogIn, LogOut, Flame, Bot, Send } from 'lucide-react';
 import { useSession } from '@/hooks/useSession';
 import { fetchMatches } from '@/api/profile';
 import { Match } from '@/api/types';
@@ -12,6 +12,16 @@ export default function Layout() {
   const navigate = useNavigate();
   const { session, likesCount, openAuthModal, logout } = useSession();
   const [matches, setMatches] = useState<Match[]>([]);
+
+  // Local AI companion chat state (mock / placeholder for "Don't add ai yet")
+  const [chatMessages, setChatMessages] = useState<Array<{ id: string; sender: 'ai' | 'user'; text: string }>>([
+    {
+      id: '1',
+      sender: 'ai',
+      text: "Hey! 🤖 I'm your Meme Companion. Swipe memes on the right, or pick a prompt below to see how I'll analyze your humor!"
+    }
+  ]);
+  const [chatInput, setChatInput] = useState('');
 
   // Load matches whenever session or likesCount updates
   useEffect(() => {
@@ -25,6 +35,31 @@ export default function Layout() {
   const isSwipingRoute = location.pathname === '/';
   const displayName = session?.username || session?.nickname || 'Guest';
   const initials = displayName.substring(0, 2).toUpperCase();
+  const avatarUrl = session?.avatar_url;
+
+  const handleSendMessage = (textToSend?: string) => {
+    const text = (textToSend || chatInput).trim();
+    if (!text) return;
+
+    const userMsgId = Date.now().toString();
+    const aiMsgId = (Date.now() + 1).toString();
+
+    let aiReply = `🤖 Got it: "${text}". Real-time AI chat is coming soon! I'll break down your ${likesCount} liked memes then.`;
+    if (text.toLowerCase().includes('roast')) {
+      aiReply = `🔥 Roasting taste preview: With ${likesCount} likes, your sense of humor ranges from delightfully chaotic to chronically online! Full AI roast coming soon.`;
+    } else if (text.toLowerCase().includes('explain')) {
+      aiReply = `💡 Meme breakdown: Context decoding and punchline analysis will unlock in the next AI update!`;
+    } else if (text.toLowerCase().includes('style')) {
+      aiReply = `✨ Taste preview: Your current swipe activity shows great taste in top-tier humor. Real-time Gemini insights are next!`;
+    }
+
+    setChatMessages(prev => [
+      ...prev,
+      { id: userMsgId, sender: 'user', text },
+      { id: aiMsgId, sender: 'ai', text: aiReply }
+    ]);
+    setChatInput('');
+  };
 
   return (
     <div className="flex flex-col lg:flex-row h-screen w-screen bg-[#f0f2f5] text-slate-800 font-sans overflow-hidden select-none">
@@ -41,8 +76,12 @@ export default function Layout() {
           title="View Profile"
         >
           <div className="relative">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] flex items-center justify-center font-bold text-xs text-white shadow-2xs">
-              {initials}
+            <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] flex items-center justify-center font-bold text-xs text-white shadow-2xs">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+              ) : (
+                initials
+              )}
             </div>
             <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${
               session?.is_guest ? 'bg-amber-400' : 'bg-emerald-400'
@@ -125,72 +164,76 @@ export default function Layout() {
       {/* ========================================================= */}
       {/* DESKTOP LEFT SIDEBAR (>= lg screens): Classic Tinder Panel */}
       {/* ========================================================= */}
-      <aside className="hidden lg:flex w-[350px] xl:w-[380px] bg-white border-r border-slate-200/90 flex-col flex-none z-30 shadow-2xs h-full">
+      <aside className="hidden lg:flex w-[280px] lg:w-[290px] xl:w-[310px] bg-white border-r border-slate-200/90 flex-col flex-none z-30 shadow-2xs h-full">
         {/* Top Profile Header: Gradient Pink/Coral Bar */}
-        <div className="flex-none h-16 bg-gradient-to-r from-[#fe3c72] via-[#ff655b] to-[#ff7854] px-4 py-2.5 flex items-center justify-between shadow-xs">
+        <div className="flex-none h-16 bg-gradient-to-r from-[#fe3c72] via-[#ff655b] to-[#ff7854] px-3.5 py-2.5 flex items-center justify-between shadow-xs">
           {/* User Profile Info (clickable to view Profile) */}
           <button 
             onClick={() => navigate('/profile')}
-            className="flex items-center gap-3 hover:opacity-90 transition-opacity text-left"
+            className="flex items-center gap-2.5 hover:opacity-90 transition-opacity text-left min-w-0"
           >
-            <div className="relative">
-              <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md border-2 border-white flex items-center justify-center font-bold text-sm text-white shadow-2xs">
-                {initials}
+            <div className="relative flex-none">
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-white/20 backdrop-blur-md border-2 border-white flex items-center justify-center font-bold text-sm text-white shadow-2xs">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+                ) : (
+                  initials
+                )}
               </div>
               <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${
                 session?.is_guest ? 'bg-amber-300' : 'bg-emerald-400'
               }`} />
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-bold text-white text-sm truncate max-w-[130px]">
+                <span className="font-bold text-white text-xs truncate max-w-[115px]">
                   {displayName}
                 </span>
-                <span className="text-[11px] text-white/80 bg-black/15 px-1.5 py-0.2 rounded font-medium">
+                <span className="text-[10px] text-white/90 bg-black/15 px-1.5 py-0.2 rounded font-medium flex-none">
                   {likesCount} ❤️
                 </span>
               </div>
-              <span className="text-[11px] text-white/85 font-medium">
+              <span className="text-[10px] text-white/85 font-medium truncate">
                 {session?.is_guest ? 'Guest Session' : 'My Profile'}
               </span>
             </div>
           </button>
 
           {/* Right Action: Auth button / settings */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 flex-none">
             {session?.is_guest ? (
               <button
                 onClick={() => openAuthModal('login')}
-                className="px-3 py-1 bg-white hover:bg-white/95 text-[#fe3c72] rounded-full text-xs font-bold shadow-xs flex items-center gap-1 transition-all active:scale-95"
+                className="px-2.5 py-1 bg-white hover:bg-white/95 text-[#fe3c72] rounded-full text-[11px] font-bold shadow-xs flex items-center gap-1 transition-all active:scale-95"
               >
-                <LogIn size={13} strokeWidth={2.5} />
+                <LogIn size={12} strokeWidth={2.5} />
                 <span>Log In</span>
               </button>
             ) : (
               <button
                 onClick={logout}
                 title="Log out"
-                className="p-2 text-white/90 hover:text-white hover:bg-white/20 rounded-full transition-colors"
+                className="p-1.5 text-white/90 hover:text-white hover:bg-white/20 rounded-full transition-colors"
               >
-                <LogOut size={16} strokeWidth={2.2} />
+                <LogOut size={15} strokeWidth={2.2} />
               </button>
             )}
           </div>
         </div>
 
         {/* Tinder "Discover Memes" Hero Card */}
-        <div className="p-3.5 border-b border-slate-100">
+        <div className="p-3 border-b border-slate-100">
           <button
             onClick={() => navigate('/')}
             className={clsx(
-              "w-full p-3 rounded-2xl flex items-center gap-3.5 transition-all text-left group",
+              "w-full p-2.5 rounded-2xl flex items-center gap-3 transition-all text-left group",
               isSwipingRoute
                 ? "bg-gradient-to-r from-rose-50 to-orange-50 border-2 border-[#fe3c72]/30 shadow-2xs"
                 : "bg-slate-50 hover:bg-slate-100/80 border border-slate-200"
             )}
           >
             <div className={clsx(
-              "w-12 h-12 rounded-2xl flex items-center justify-center text-xl transition-transform group-hover:scale-105 shadow-2xs flex-none",
+              "w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-transform group-hover:scale-105 shadow-2xs flex-none",
               isSwipingRoute
                 ? "bg-gradient-to-tr from-[#fe3c72] to-[#ff655b] text-white"
                 : "bg-white border-2 border-[#fe3c72] text-[#fe3c72]"
@@ -199,35 +242,36 @@ export default function Layout() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
-                <h4 className="font-bold text-sm text-slate-900 group-hover:text-[#fe3c72] transition-colors">
+                <h4 className="font-bold text-xs text-slate-900 group-hover:text-[#fe3c72] transition-colors">
                   Discover Memes
                 </h4>
                 {isSwipingRoute && (
                   <span className="w-2 h-2 rounded-full bg-[#fe3c72] animate-ping" />
                 )}
               </div>
-              <p className="text-xs text-slate-500 truncate mt-0.5">
-                Start swiping to find your humor twins!
+              <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                Swipe memes to find your taste twins!
               </p>
             </div>
           </button>
         </div>
 
         {/* Section Tabs (Matches / AI Analyst / Saved / Profile) */}
-        <div className="flex items-center px-3 pt-2 pb-1 gap-1 border-b border-slate-100">
+        <div className="flex items-center px-2 pt-2 pb-1 gap-1 border-b border-slate-100">
           <NavLink
             to="/matches"
+            title="Humor Matches"
             className={({ isActive }) => clsx(
-              "flex-1 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all",
+              "flex-1 py-1.5 px-1 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition-all",
               isActive 
                 ? "text-[#fe3c72] bg-rose-50 border-b-2 border-[#fe3c72]"
                 : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
             )}
           >
-            <Heart size={14} strokeWidth={2.4} />
-            <span>Matches</span>
+            <Heart size={13} strokeWidth={2.4} />
+            <span className="truncate">Matches</span>
             {matches.length > 0 && (
-              <span className="ml-0.5 px-1.5 py-0.2 bg-[#fe3c72] text-white rounded-full text-[10px] font-bold">
+              <span className="px-1 py-0.1 bg-[#fe3c72] text-white rounded-full text-[9px] font-bold">
                 {matches.length}
               </span>
             )}
@@ -235,113 +279,144 @@ export default function Layout() {
 
           <NavLink
             to="/ai"
+            title="AI Analyst"
             className={({ isActive }) => clsx(
-              "flex-1 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all",
+              "flex-1 py-1.5 px-1 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition-all",
               isActive 
                 ? "text-[#fe3c72] bg-rose-50 border-b-2 border-[#fe3c72]"
                 : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
             )}
           >
-            <Sparkles size={14} strokeWidth={2.4} />
-            <span>AI Analyst</span>
+            <Sparkles size={13} strokeWidth={2.4} />
+            <span className="truncate">Analyst</span>
           </NavLink>
 
           <NavLink
             to="/saved"
+            title="Saved Memes"
             className={({ isActive }) => clsx(
-              "flex-1 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all",
+              "flex-1 py-1.5 px-1 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition-all",
               isActive 
                 ? "text-[#fe3c72] bg-rose-50 border-b-2 border-[#fe3c72]"
                 : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
             )}
           >
-            <Bookmark size={14} strokeWidth={2.4} />
-            <span>Saved</span>
+            <Bookmark size={13} strokeWidth={2.4} />
+            <span className="truncate">Saved</span>
           </NavLink>
 
           <NavLink
             to="/profile"
+            title="My Profile"
             className={({ isActive }) => clsx(
-              "flex-1 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all",
+              "flex-1 py-1.5 px-1 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition-all",
               isActive 
                 ? "text-[#fe3c72] bg-rose-50 border-b-2 border-[#fe3c72]"
                 : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
             )}
           >
-            <User size={14} strokeWidth={2.4} />
-            <span>Profile</span>
+            <User size={13} strokeWidth={2.4} />
+            <span className="truncate">Profile</span>
           </NavLink>
         </div>
 
-        {/* Sidebar Content List: Real-time Matches & Chats */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-1">
-          <div className="flex items-center justify-between px-2 py-1 mb-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Humor Twins & Matches
-            </span>
-            {matches.length > 0 && (
-              <span className="text-xs text-slate-400 font-semibold">
-                {matches.length} found
-              </span>
-            )}
-          </div>
-
-          {likesCount < 10 ? (
-            <div className="p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center">
-              <span className="text-2xl mb-1 block">🎯</span>
-              <p className="text-xs font-bold text-slate-700">Find your Humor Twins</p>
-              <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
-                Like {10 - likesCount} more memes on the right to discover people who laugh at the exact same jokes!
-              </p>
-              <div className="w-full bg-slate-200 h-1.5 rounded-full mt-3 overflow-hidden">
-                <div 
-                  className="bg-gradient-to-r from-[#fe3c72] to-[#ff6036] h-full rounded-full transition-all duration-300"
-                  style={{ width: `${(likesCount / 10) * 100}%` }}
-                />
+        {/* ========================================================= */}
+        {/* LOWER SIDEBAR: AI MEME COMPANION CHAT (Ready for AI)     */}
+        {/* ========================================================= */}
+        <div className="flex-1 flex flex-col min-h-0 bg-slate-50/50">
+          {/* AI Header */}
+          <div className="p-3 pb-2 border-b border-slate-100 flex items-center justify-between bg-white/70">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] flex items-center justify-center text-white shadow-2xs">
+                <Bot size={14} />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <span>Meme Companion</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                </h4>
               </div>
             </div>
-          ) : matches.length === 0 ? (
-            <div className="p-6 text-center text-slate-400">
-              <Heart size={28} className="mx-auto text-slate-300 mb-2" />
-              <p className="text-xs font-semibold text-slate-600">No matches found yet</p>
-              <p className="text-[11px] text-slate-400 mt-0.5">Keep swiping memes to find taste twins!</p>
-            </div>
-          ) : (
-            matches.map((m) => {
-              const matchInitials = m.nickname.substring(0, 2).toUpperCase();
-              const percent = Math.round(m.similarity_score * 100);
-              return (
-                <button
-                  key={m.user_id}
-                  onClick={() => navigate('/matches')}
-                  className="w-full p-2.5 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 flex items-center gap-3 transition-all text-left group"
-                >
-                  <div className="relative flex-none">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-2xs group-hover:scale-105 transition-transform">
-                      {matchInitials}
-                    </div>
-                    <span className="absolute -bottom-1 -right-1 px-1.5 py-0.2 rounded-full bg-[#10b981] text-white text-[9px] font-bold border-2 border-white shadow-2xs">
-                      {percent}%
-                    </span>
-                  </div>
+            <span className="text-[10px] font-extrabold uppercase tracking-wide bg-rose-50 text-[#fe3c72] border border-rose-200/80 px-2 py-0.5 rounded-full">
+              AI Ready
+            </span>
+          </div>
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-sm text-slate-800 truncate group-hover:text-[#fe3c72] transition-colors">
-                        {m.nickname}
-                      </span>
-                      <span className="text-[11px] font-semibold text-emerald-600">
-                        {percent}% Match
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-500 truncate mt-0.5 flex items-center gap-1">
-                      <span>👯</span> {m.shared_memes_count} shared memes in common
-                    </p>
+          {/* Quick Prompt Suggestion Chips */}
+          <div className="px-3 pt-2 pb-1.5 flex gap-1.5 overflow-x-auto no-scrollbar border-b border-slate-100/60 bg-white/40">
+            <button
+              type="button"
+              onClick={() => handleSendMessage("🎭 Roast my humor taste")}
+              className="text-[10px] font-semibold bg-white hover:bg-rose-50 text-slate-600 hover:text-[#fe3c72] border border-slate-200/80 hover:border-rose-200 rounded-full px-2.5 py-1 whitespace-nowrap transition-colors shadow-2xs"
+            >
+              🎭 Roast taste
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSendMessage("✨ What's my style?")}
+              className="text-[10px] font-semibold bg-white hover:bg-rose-50 text-slate-600 hover:text-[#fe3c72] border border-slate-200/80 hover:border-rose-200 rounded-full px-2.5 py-1 whitespace-nowrap transition-colors shadow-2xs"
+            >
+              ✨ My style
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSendMessage("💡 Explain this meme")}
+              className="text-[10px] font-semibold bg-white hover:bg-rose-50 text-slate-600 hover:text-[#fe3c72] border border-slate-200/80 hover:border-rose-200 rounded-full px-2.5 py-1 whitespace-nowrap transition-colors shadow-2xs"
+            >
+              💡 Explain meme
+            </button>
+          </div>
+
+          {/* Scrollable Conversation Bubbles */}
+          <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
+            {chatMessages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`flex gap-2 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                {msg.sender === 'ai' && (
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] flex items-center justify-center text-white flex-none text-[11px] shadow-2xs">
+                    🤖
                   </div>
-                </button>
-              );
-            })
-          )}
+                )}
+                <div
+                  className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${
+                    msg.sender === 'user'
+                      ? 'bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white font-medium rounded-tr-xs shadow-xs'
+                      : 'bg-white border border-slate-200/80 text-slate-700 rounded-tl-xs shadow-2xs'
+                  }`}
+                >
+                  {msg.text}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Chat Input Bar */}
+          <div className="p-2.5 bg-white border-t border-slate-100 flex items-center gap-1.5">
+            <input
+              type="text"
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              placeholder="Ask Meme AI..."
+              className="flex-1 px-3 py-2 text-xs bg-slate-100/80 border border-slate-200/60 rounded-xl focus:outline-none focus:bg-white focus:border-[#fe3c72] transition-colors"
+            />
+            <button
+              type="button"
+              onClick={() => handleSendMessage()}
+              disabled={!chatInput.trim()}
+              className="p-2 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white rounded-xl hover:opacity-90 transition-all disabled:opacity-30 active:scale-95 shadow-2xs"
+              title="Send message"
+            >
+              <Send size={13} />
+            </button>
+          </div>
         </div>
       </aside>
 

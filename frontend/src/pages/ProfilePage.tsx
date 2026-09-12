@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '@/hooks/useSession';
 import ProfileStats from '@/components/ProfileStats';
-import { Loader2, Sparkles, UserPlus, LogIn, LogOut, CheckCircle2, ShieldAlert, ArrowLeft, Flame } from 'lucide-react';
+import EditProfileModal from '@/components/EditProfileModal';
+import { Loader2, Sparkles, UserPlus, LogIn, LogOut, CheckCircle2, ShieldAlert, ArrowLeft, Flame, Pencil } from 'lucide-react';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { session, profile, openAuthModal, logout } = useSession();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   if (!profile || !session) {
     return (
@@ -15,11 +18,18 @@ export default function ProfilePage() {
     );
   }
 
-  const displayName = session.username || session.nickname;
+  const displayName = profile.nickname || session.username || session.nickname;
   const initials = displayName.substring(0, 2).toUpperCase();
+  const avatarUrl = profile.avatar_url || session.avatar_url;
+  const bio = profile.bio || session.bio;
 
   return (
     <div className="flex flex-col h-full bg-[#f0f2f5]">
+      <EditProfileModal 
+        isOpen={isEditModalOpen} 
+        onClose={() => setIsEditModalOpen(false)} 
+      />
+
       {/* Top Bar with "Back to Swiping" button */}
       <div className="flex-none bg-white border-b border-slate-200/90 px-6 py-4 flex items-center justify-between shadow-xs z-10">
         <div className="flex items-center gap-3">
@@ -45,19 +55,43 @@ export default function ProfilePage() {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 max-w-2xl w-full mx-auto">
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-xs flex flex-col items-center text-center">
-          {/* Avatar with Tinder gradient */}
-          <div className="relative">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-[#fe3c72] via-[#ff655b] to-[#ff7854] flex items-center justify-center text-white font-black text-3xl shadow-md border-4 border-white">
-              {initials}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-xs flex flex-col items-center text-center relative">
+          
+          {/* Top-right Edit Profile quick button */}
+          <button
+            type="button"
+            onClick={() => setIsEditModalOpen(true)}
+            className="absolute top-5 right-5 px-3 py-1.5 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-[#fe3c72] border border-slate-200/80 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95"
+            title="Edit Profile"
+          >
+            <Pencil size={12} />
+            <span>Edit Profile</span>
+          </button>
+
+          {/* Avatar with click-to-edit indicator */}
+          <div className="relative group cursor-pointer" onClick={() => setIsEditModalOpen(true)}>
+            <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md bg-gradient-to-tr from-[#fe3c72] via-[#ff655b] to-[#ff7854] flex items-center justify-center text-white font-black text-3xl">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={displayName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span>{initials}</span>
+              )}
+            </div>
+            <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1 backdrop-blur-2xs">
+              <Pencil size={14} />
+              <span>Edit</span>
             </div>
           </div>
 
           {/* User Identity */}
-          <h2 className="mt-4 text-2xl font-black text-slate-900 tracking-tight">{displayName}</h2>
+          <h2 className="mt-3.5 text-2xl font-black text-slate-900 tracking-tight">{displayName}</h2>
           
           {/* Account Type Badge */}
-          <div className="mt-2 flex items-center gap-2">
+          <div className="mt-1.5 flex items-center gap-2">
             {session.is_guest ? (
               <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 shadow-2xs">
                 <ShieldAlert size={12} />
@@ -71,8 +105,23 @@ export default function ProfilePage() {
             )}
           </div>
 
+          {/* User Bio or Friendly Placeholder */}
+          {bio ? (
+            <p className="mt-3 text-xs sm:text-sm text-slate-700 italic max-w-md mx-auto leading-relaxed bg-slate-50/80 px-4 py-2 rounded-2xl border border-slate-100">
+              "{bio}"
+            </p>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsEditModalOpen(true)}
+              className="mt-3 text-xs text-[#fe3c72] hover:text-[#ff6036] hover:underline flex items-center gap-1 transition-colors"
+            >
+              <span>+ Add a bio or describe your humor</span>
+            </button>
+          )}
+
           {session.email && (
-            <p className="text-slate-500 text-xs mt-1.5">{session.email}</p>
+            <p className="text-slate-500 text-xs mt-2">{session.email}</p>
           )}
 
           <p className="text-slate-400 text-xs mt-1">

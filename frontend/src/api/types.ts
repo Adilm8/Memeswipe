@@ -17,6 +17,8 @@ export interface Session {
   is_guest: boolean;
   username?: string | null;
   email?: string | null;
+  bio?: string | null;
+  avatar_url?: string | null;
   created_at: string;
 }
 
@@ -26,6 +28,8 @@ export interface Profile {
   is_guest?: boolean;
   username?: string | null;
   email?: string | null;
+  bio?: string | null;
+  avatar_url?: string | null;
   total_swipes: number;
   total_likes: number;
   total_dislikes: number;
@@ -37,6 +41,8 @@ export interface Profile {
 export interface Match {
   user_id: string;
   nickname: string;
+  bio?: string | null;
+  avatar_url?: string | null;
   similarity_score: number;
   shared_memes_count: number;
   shared_memes: Meme[];

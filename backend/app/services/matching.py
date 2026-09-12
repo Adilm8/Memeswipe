@@ -85,6 +85,8 @@ async def find_matches(
         match_responses.append(MatchResponse(
             user_id=cand_user.id,
             nickname=cand_user.nickname,
+            bio=cand_user.bio,
+            avatar_url=cand_user.avatar_url,
             similarity_score=jaccard,
             shared_memes_count=len(shared),
             shared_memes=shared_memes

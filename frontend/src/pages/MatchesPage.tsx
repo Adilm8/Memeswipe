@@ -85,10 +85,14 @@ export default function MatchesPage() {
                   transition={{ delay: i * 0.05 }}
                   className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs hover:shadow-md transition-shadow"
                 >
-                  <div className="flex justify-between items-center mb-3">
+                  <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-xs">
-                        {initials}
+                      <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-xs flex-none">
+                        {match.avatar_url ? (
+                          <img src={match.avatar_url} alt={match.nickname} className="w-full h-full object-cover" />
+                        ) : (
+                          <span>{initials}</span>
+                        )}
                       </div>
                       <div>
                         <h3 className="font-bold text-base text-slate-900">{match.nickname}</h3>
@@ -102,6 +106,12 @@ export default function MatchesPage() {
                       {percent}% Match
                     </span>
                   </div>
+
+                  {match.bio && (
+                    <p className="text-xs text-slate-600 italic bg-slate-50 px-3 py-1.5 rounded-xl mb-3 border border-slate-100">
+                      "{match.bio}"
+                    </p>
+                  )}
 
                   {/* Similarity meter */}
                   <div className="w-full bg-slate-100 rounded-full h-2 mb-4 overflow-hidden">

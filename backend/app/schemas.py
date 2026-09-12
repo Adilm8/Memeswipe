@@ -29,6 +29,11 @@ class UserLoginRequest(BaseModel):
     username: str
     password: str
 
+class ProfileUpdateRequest(BaseModel):
+    nickname: Optional[str] = None
+    bio: Optional[str] = None
+    avatar_url: Optional[str] = None
+
 class SessionResponse(BaseModel):
     session_token: str
     user_id: UUID
@@ -36,6 +41,8 @@ class SessionResponse(BaseModel):
     is_guest: bool = True
     username: Optional[str] = None
     email: Optional[str] = None
+    bio: Optional[str] = None
+    avatar_url: Optional[str] = None
     created_at: datetime
     
     class Config:
@@ -47,6 +54,8 @@ class ProfileResponse(BaseModel):
     is_guest: bool = True
     username: Optional[str] = None
     email: Optional[str] = None
+    bio: Optional[str] = None
+    avatar_url: Optional[str] = None
     total_swipes: int
     total_likes: int
     total_dislikes: int
@@ -57,6 +66,8 @@ class ProfileResponse(BaseModel):
 class MatchResponse(BaseModel):
     user_id: UUID
     nickname: str
+    bio: Optional[str] = None
+    avatar_url: Optional[str] = None
     similarity_score: float
     shared_memes_count: int
     shared_memes: List[MemeResponse]

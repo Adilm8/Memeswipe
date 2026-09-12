@@ -35,5 +35,7 @@ async function fetchWithSession<T = any>(endpoint: string, options: RequestInit 
 export const client = {
   get: <T>(endpoint: string) => fetchWithSession<T>(endpoint, { method: 'GET' }),
   post: <T>(endpoint: string, data?: any) => fetchWithSession<T>(endpoint, { method: 'POST', body: JSON.stringify(data) }),
+  patch: <T>(endpoint: string, data?: any) => fetchWithSession<T>(endpoint, { method: 'PATCH', body: JSON.stringify(data) }),
+  put: <T>(endpoint: string, data?: any) => fetchWithSession<T>(endpoint, { method: 'PUT', body: JSON.stringify(data) }),
   delete: <T>(endpoint: string) => fetchWithSession<T>(endpoint, { method: 'DELETE' })
 };

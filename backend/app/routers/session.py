@@ -38,6 +38,8 @@ def to_session_response(user: GuestUser) -> SessionResponse:
         is_guest=user.is_guest,
         username=user.username,
         email=user.email,
+        bio=user.bio,
+        avatar_url=user.avatar_url,
         created_at=user.created_at
     )
 

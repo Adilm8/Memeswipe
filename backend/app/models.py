@@ -36,6 +36,8 @@ class GuestUser(Base):
     email: Mapped[Optional[str]] = mapped_column(String, unique=True, nullable=True)
     password_hash: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     is_guest: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    bio: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    avatar_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     
     swipes = relationship("UserSwipe", back_populates="user", cascade="all, delete-orphan")

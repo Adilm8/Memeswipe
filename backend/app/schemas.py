@@ -8,6 +8,8 @@ class MemeResponse(BaseModel):
     title: str
     image_url: str
     source: str
+    source_url: Optional[str] = None
+    author: Optional[str] = None
     upvotes: int
     likes_count: int
     dislikes_count: int

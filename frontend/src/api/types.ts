@@ -3,6 +3,8 @@ export interface Meme {
   title: string;
   image_url: string;
   source: string;
+  source_url?: string;
+  author?: string;
   upvotes: number;
   likes_count: number;
   dislikes_count: number;

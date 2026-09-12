@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Bookmark, User, Heart, Sparkles, LogIn, LogOut, Flame, Bot, Send } from 'lucide-react';
+import { Bookmark, User, Heart, Sparkles, LogIn, LogOut, Flame, Bot, Send, Loader2 } from 'lucide-react';
 import { useSession } from '@/hooks/useSession';
 import { fetchMatches } from '@/api/profile';
+import { chatWithAI } from '@/api/ai';
 import { Match } from '@/api/types';
 import AuthModal from '@/components/AuthModal';
 import clsx from 'clsx';
@@ -13,15 +14,24 @@ export default function Layout() {
   const { session, likesCount, openAuthModal, logout } = useSession();
   const [matches, setMatches] = useState<Match[]>([]);
 
-  // Local AI companion chat state (mock / placeholder for "Don't add ai yet")
+  // Live Gemini AI companion chat state
   const [chatMessages, setChatMessages] = useState<Array<{ id: string; sender: 'ai' | 'user'; text: string }>>([
     {
       id: '1',
       sender: 'ai',
-      text: "Hey! 🤖 I'm your Meme Companion. Swipe memes on the right, or pick a prompt below to see how I'll analyze your humor!"
+      text: "Hey! 🤖 I'm your Meme Companion powered by Gemini. Swipe memes on the right, or pick a prompt below to roast your taste or analyze humor!"
     }
   ]);
   const [chatInput, setChatInput] = useState('');
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto scroll chat to bottom
+  useEffect(() => {
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+    }
+  }, [chatMessages, isAiLoading]);
 
   // Load matches whenever session or likesCount updates
   useEffect(() => {
@@ -37,28 +47,34 @@ export default function Layout() {
   const initials = displayName.substring(0, 2).toUpperCase();
   const avatarUrl = session?.avatar_url;
 
-  const handleSendMessage = (textToSend?: string) => {
+  const handleSendMessage = async (textToSend?: string) => {
     const text = (textToSend || chatInput).trim();
-    if (!text) return;
+    if (!text || isAiLoading) return;
 
     const userMsgId = Date.now().toString();
-    const aiMsgId = (Date.now() + 1).toString();
-
-    let aiReply = `🤖 Got it: "${text}". Real-time AI chat is coming soon! I'll break down your ${likesCount} liked memes then.`;
-    if (text.toLowerCase().includes('roast')) {
-      aiReply = `🔥 Roasting taste preview: With ${likesCount} likes, your sense of humor ranges from delightfully chaotic to chronically online! Full AI roast coming soon.`;
-    } else if (text.toLowerCase().includes('explain')) {
-      aiReply = `💡 Meme breakdown: Context decoding and punchline analysis will unlock in the next AI update!`;
-    } else if (text.toLowerCase().includes('style')) {
-      aiReply = `✨ Taste preview: Your current swipe activity shows great taste in top-tier humor. Real-time Gemini insights are next!`;
-    }
-
-    setChatMessages(prev => [
-      ...prev,
-      { id: userMsgId, sender: 'user', text },
-      { id: aiMsgId, sender: 'ai', text: aiReply }
-    ]);
+    setChatMessages(prev => [...prev, { id: userMsgId, sender: 'user', text }]);
     setChatInput('');
+    setIsAiLoading(true);
+
+    try {
+      const reply = await chatWithAI(text);
+      setChatMessages(prev => [
+        ...prev,
+        { id: (Date.now() + 1).toString(), sender: 'ai', text: reply }
+      ]);
+    } catch (err: any) {
+      console.error('AI chat error:', err);
+      setChatMessages(prev => [
+        ...prev,
+        { 
+          id: (Date.now() + 1).toString(), 
+          sender: 'ai', 
+          text: "My meme neurons are currently cooling down! 🤖 Try asking again in a moment." 
+        }
+      ]);
+    } finally {
+      setIsAiLoading(false);
+    }
   };
 
   return (
@@ -321,7 +337,7 @@ export default function Layout() {
         </div>
 
         {/* ========================================================= */}
-        {/* LOWER SIDEBAR: AI MEME COMPANION CHAT (Ready for AI)     */}
+        {/* LOWER SIDEBAR: AI MEME COMPANION CHAT (Powered by Gemini) */}
         {/* ========================================================= */}
         <div className="flex-1 flex flex-col min-h-0 bg-slate-50/50">
           {/* AI Header */}
@@ -337,8 +353,9 @@ export default function Layout() {
                 </h4>
               </div>
             </div>
-            <span className="text-[10px] font-extrabold uppercase tracking-wide bg-rose-50 text-[#fe3c72] border border-rose-200/80 px-2 py-0.5 rounded-full">
-              AI Ready
+            <span className="text-[10px] font-extrabold uppercase tracking-wide bg-rose-50 text-[#fe3c72] border border-rose-200/80 px-2 py-0.5 rounded-full flex items-center gap-1">
+              <Sparkles size={10} />
+              Gemini AI
             </span>
           </div>
 
@@ -346,29 +363,32 @@ export default function Layout() {
           <div className="px-3 pt-2 pb-1.5 flex gap-1.5 overflow-x-auto no-scrollbar border-b border-slate-100/60 bg-white/40">
             <button
               type="button"
+              disabled={isAiLoading}
               onClick={() => handleSendMessage("🎭 Roast my humor taste")}
-              className="text-[10px] font-semibold bg-white hover:bg-rose-50 text-slate-600 hover:text-[#fe3c72] border border-slate-200/80 hover:border-rose-200 rounded-full px-2.5 py-1 whitespace-nowrap transition-colors shadow-2xs"
+              className="text-[10px] font-semibold bg-white hover:bg-rose-50 text-slate-600 hover:text-[#fe3c72] border border-slate-200/80 hover:border-rose-200 rounded-full px-2.5 py-1 whitespace-nowrap transition-colors shadow-2xs disabled:opacity-50"
             >
               🎭 Roast taste
             </button>
             <button
               type="button"
-              onClick={() => handleSendMessage("✨ What's my style?")}
-              className="text-[10px] font-semibold bg-white hover:bg-rose-50 text-slate-600 hover:text-[#fe3c72] border border-slate-200/80 hover:border-rose-200 rounded-full px-2.5 py-1 whitespace-nowrap transition-colors shadow-2xs"
+              disabled={isAiLoading}
+              onClick={() => handleSendMessage("✨ What's my humor style based on my likes?")}
+              className="text-[10px] font-semibold bg-white hover:bg-rose-50 text-slate-600 hover:text-[#fe3c72] border border-slate-200/80 hover:border-rose-200 rounded-full px-2.5 py-1 whitespace-nowrap transition-colors shadow-2xs disabled:opacity-50"
             >
               ✨ My style
             </button>
             <button
               type="button"
-              onClick={() => handleSendMessage("💡 Explain this meme")}
-              className="text-[10px] font-semibold bg-white hover:bg-rose-50 text-slate-600 hover:text-[#fe3c72] border border-slate-200/80 hover:border-rose-200 rounded-full px-2.5 py-1 whitespace-nowrap transition-colors shadow-2xs"
+              disabled={isAiLoading}
+              onClick={() => handleSendMessage("😂 Tell me a top tier meme joke")}
+              className="text-[10px] font-semibold bg-white hover:bg-rose-50 text-slate-600 hover:text-[#fe3c72] border border-slate-200/80 hover:border-rose-200 rounded-full px-2.5 py-1 whitespace-nowrap transition-colors shadow-2xs disabled:opacity-50"
             >
-              💡 Explain meme
+              😂 Joke
             </button>
           </div>
 
           {/* Scrollable Conversation Bubbles */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
+          <div ref={chatScrollRef} className="flex-1 overflow-y-auto p-3 space-y-2.5">
             {chatMessages.map((msg) => (
               <div
                 key={msg.id}
@@ -383,13 +403,25 @@ export default function Layout() {
                   className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${
                     msg.sender === 'user'
                       ? 'bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white font-medium rounded-tr-xs shadow-xs'
-                      : 'bg-white border border-slate-200/80 text-slate-700 rounded-tl-xs shadow-2xs'
+                      : 'bg-white border border-slate-200/80 text-slate-700 rounded-tl-xs shadow-2xs whitespace-pre-line'
                   }`}
                 >
                   {msg.text}
                 </div>
               </div>
             ))}
+
+            {isAiLoading && (
+              <div className="flex gap-2 justify-start items-center">
+                <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] flex items-center justify-center text-white flex-none text-[11px] shadow-2xs">
+                  🤖
+                </div>
+                <div className="bg-white border border-slate-200/80 rounded-2xl px-3 py-2 flex items-center gap-2 shadow-2xs text-slate-500">
+                  <Loader2 size={13} className="animate-spin text-[#fe3c72]" />
+                  <span className="text-[11px] font-medium text-slate-600">Gemini is thinking...</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Chat Input Bar */}
@@ -404,17 +436,18 @@ export default function Layout() {
                   handleSendMessage();
                 }
               }}
-              placeholder="Ask Meme AI..."
-              className="flex-1 px-3 py-2 text-xs bg-slate-100/80 border border-slate-200/60 rounded-xl focus:outline-none focus:bg-white focus:border-[#fe3c72] transition-colors"
+              placeholder={isAiLoading ? "Waiting for Gemini..." : "Ask Meme AI..."}
+              disabled={isAiLoading}
+              className="flex-1 px-3 py-2 text-xs bg-slate-100/80 border border-slate-200/60 rounded-xl focus:outline-none focus:bg-white focus:border-[#fe3c72] transition-colors disabled:opacity-60"
             />
             <button
               type="button"
               onClick={() => handleSendMessage()}
-              disabled={!chatInput.trim()}
+              disabled={!chatInput.trim() || isAiLoading}
               className="p-2 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white rounded-xl hover:opacity-90 transition-all disabled:opacity-30 active:scale-95 shadow-2xs"
               title="Send message"
             >
-              <Send size={13} />
+              {isAiLoading ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
             </button>
           </div>
         </div>

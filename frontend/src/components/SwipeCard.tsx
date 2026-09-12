@@ -1,5 +1,5 @@
 import { Meme } from '@/api/types';
-import { ExternalLink, User, Maximize2 } from 'lucide-react';
+import { ExternalLink, User, Maximize2, Sparkles } from 'lucide-react';
 import { useRef } from 'react';
 
 interface SwipeCardProps {
@@ -86,7 +86,7 @@ export default function SwipeCard({ meme, onEnlarge }: SwipeCardProps) {
       </div>
 
       {/* Bottom Info Strip */}
-      <div className="flex-none px-3.5 py-2.5 sm:px-4 sm:py-3 bg-white border-t border-slate-100 z-20 flex items-center justify-between gap-2.5 pointer-events-auto">
+      <div className="flex-none px-3.5 py-2.5 sm:px-4 sm:py-3 bg-white border-t border-slate-100 z-20 flex items-center justify-between gap-2 pointer-events-auto">
         <h2 
           onClick={() => onEnlarge?.(meme)}
           title="Click to enlarge"
@@ -95,18 +95,35 @@ export default function SwipeCard({ meme, onEnlarge }: SwipeCardProps) {
           {meme.title}
         </h2>
 
-        {meme.source_url && (
-          <a
-            href={meme.source_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Open discussion on Reddit"
-            className="flex-none flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-[#fe3c72] bg-slate-100 hover:bg-rose-50 px-2 py-1 rounded-lg border border-slate-200 transition-colors"
-          >
-            <span>Reddit</span>
-            <ExternalLink size={11} />
-          </a>
-        )}
+        <div className="flex items-center gap-1.5 flex-none">
+          {onEnlarge && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEnlarge(meme);
+              }}
+              title="Explain meme with AI"
+              className="flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-lg border border-blue-200/80 transition-colors shadow-2xs"
+            >
+              <Sparkles size={11} />
+              <span>Explain</span>
+            </button>
+          )}
+
+          {meme.source_url && (
+            <a
+              href={meme.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Open discussion on Reddit"
+              className="flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-[#fe3c72] bg-slate-100 hover:bg-rose-50 px-2 py-1 rounded-lg border border-slate-200 transition-colors"
+            >
+              <span>Reddit</span>
+              <ExternalLink size={11} />
+            </a>
+          )}
+        </div>
       </div>
     </div>
   );

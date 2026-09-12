@@ -82,8 +82,18 @@ async def chat(
     )
     liked_memes = result.scalars().all()
     
+    current_meme = None
+    if request.meme_id:
+        meme_res = await db.execute(select(Meme).where(Meme.id == request.meme_id))
+        current_meme = meme_res.scalars().first()
+        
     profile = await ai_service.generate_humor_profile(liked_memes)
-    context = f"User Humor Profile: {profile.profile}. Style: {profile.humor_style}. Categories: {', '.join(profile.top_categories)}."
+    context = (
+        f"User nickname: {user.nickname} ({'Guest' if user.is_guest else 'Registered Member'}). "
+        f"Total likes: {len(liked_memes)}. "
+        f"Humor Profile: {profile.profile}. Style: {profile.humor_style}. "
+        f"Favorite categories: {', '.join(profile.top_categories)}."
+    )
     
-    response = await ai_service.chat(request.message, context)
+    response = await ai_service.chat(request.message, context, current_meme=current_meme)
     return AIResponse(response=response)

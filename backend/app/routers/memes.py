@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, func, and_, delete
 from sqlalchemy.exc import IntegrityError
 from app.database import get_db
 from app.models import Meme, UserSwipe, SavedMeme, GuestUser
 from app.schemas import MemeResponse, SwipeRequest, SavedMemeResponse
 from app.routers.session import get_current_user
-from typing import List
+from app.services.meme_seeder import fetch_fresh_memes
+from typing import List, Dict, Any
 import uuid
 
 router = APIRouter(prefix="/memes", tags=["Memes"])
@@ -27,7 +28,52 @@ async def get_feed(
     )
     
     result = await db.execute(query)
-    return result.scalars().all()
+    memes = list(result.scalars().all())
+    
+    # If the user has fewer unswiped memes than requested (running low),
+    # automatically fetch fresh memes from Reddit in the background!
+    if len(memes) < count:
+        try:
+            new_added = await fetch_fresh_memes(db, batch_size=50)
+            if new_added > 0:
+                # Re-query feed to include newly fetched memes
+                fresh_result = await db.execute(query)
+                memes = list(fresh_result.scalars().all())
+        except Exception as e:
+            print(f"Auto-fetch failed during get_feed: {e}")
+            
+    return memes
+
+@router.post("/refill")
+async def refill_memes(
+    db: AsyncSession = Depends(get_db),
+    user: GuestUser = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """Manually fetch fresh memes from multiple subreddits."""
+    inserted = await fetch_fresh_memes(db, batch_size=50)
+    return {
+        "success": True,
+        "new_memes_added": inserted,
+        "message": f"Successfully ingested {inserted} fresh memes!"
+    }
+
+@router.post("/reset-dislikes")
+async def reset_dislikes(
+    db: AsyncSession = Depends(get_db),
+    user: GuestUser = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """Reset only dislike actions so user can re-swipe on memes they previously skipped."""
+    result = await db.execute(
+        delete(UserSwipe).where(
+            and_(UserSwipe.user_id == user.id, UserSwipe.action == "dislike")
+        )
+    )
+    await db.commit()
+    return {
+        "success": True,
+        "reset_count": result.rowcount,
+        "message": f"Reshuffled {result.rowcount} skipped memes!"
+    }
 
 @router.post("/{meme_id}/swipe", response_model=MemeResponse)
 async def swipe_meme(

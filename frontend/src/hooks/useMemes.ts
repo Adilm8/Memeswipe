@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Meme } from '@/api/types';
-import { fetchFeed } from '@/api/memes';
+import { fetchFeed, refillMemes, resetDislikes } from '@/api/memes';
 import { useSession } from '@/hooks/useSession';
 
 export const useMemes = () => {
   const { session } = useSession();
   const [memes, setMemes] = useState<Meme[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefilling, setIsRefilling] = useState(false);
   const loadingRef = useRef(false);
 
   const loadMemes = useCallback(async () => {
@@ -15,10 +16,10 @@ export const useMemes = () => {
     setIsLoading(true);
     try {
       const feed = await fetchFeed(20);
-      setMemes(prev => {
+      setMemes((prev) => {
         // Deduplicate memes by id
-        const existingIds = new Set(prev.map(m => m.id));
-        const newMemes = feed.filter(m => !existingIds.has(m.id));
+        const existingIds = new Set(prev.map((m) => m.id));
+        const newMemes = feed.filter((m) => !existingIds.has(m.id));
         return [...prev, ...newMemes];
       });
     } catch (e) {
@@ -46,20 +47,49 @@ export const useMemes = () => {
   // Preload next 2 images for instant display
   useEffect(() => {
     const topMemes = memes.slice(-3);
-    topMemes.forEach(meme => {
+    topMemes.forEach((meme) => {
       const img = new Image();
       img.src = meme.image_url;
     });
   }, [memes]);
 
   const removeMeme = (id: string) => {
-    setMemes(prev => prev.filter(m => m.id !== id));
+    setMemes((prev) => prev.filter((m) => m.id !== id));
   };
+
+  // Explicitly fetch fresh memes from Reddit
+  const refillFeed = useCallback(async () => {
+    setIsRefilling(true);
+    try {
+      await refillMemes();
+      await loadMemes();
+    } catch (e) {
+      console.error('Refill error:', e);
+    } finally {
+      setIsRefilling(false);
+    }
+  }, [loadMemes]);
+
+  // Reset skipped/disliked memes so user can re-swipe them
+  const resetDislikesAndReload = useCallback(async () => {
+    setIsRefilling(true);
+    try {
+      await resetDislikes();
+      await loadMemes();
+    } catch (e) {
+      console.error('Reset dislikes error:', e);
+    } finally {
+      setIsRefilling(false);
+    }
+  }, [loadMemes]);
 
   return {
     memes,
     isLoading: isLoading || (!session && memes.length === 0),
-    isEmpty: memes.length === 0 && !isLoading && !!session,
-    removeMeme
+    isRefilling,
+    isEmpty: memes.length === 0 && !isLoading && !isRefilling && !!session,
+    removeMeme,
+    refillFeed,
+    resetDislikesAndReload,
   };
 };

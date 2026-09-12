@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import TinderCard from 'react-tinder-card';
 import SwipeCard from './SwipeCard';
 import ActionButtons from './ActionButtons';
@@ -7,10 +8,11 @@ import { useMemes } from '@/hooks/useMemes';
 import { useSwipe } from '@/hooks/useSwipe';
 import { useSession } from '@/hooks/useSession';
 import { fetchSaved } from '@/api/memes';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Sparkles, RotateCcw } from 'lucide-react';
 
 export default function SwipeDeck() {
-  const { memes, removeMeme, isLoading, isEmpty } = useMemes();
+  const navigate = useNavigate();
+  const { memes, removeMeme, isLoading, isRefilling, isEmpty, refillFeed, resetDislikesAndReload } = useMemes();
   const { handleSwipe, handleSave, handleUnsave } = useSwipe();
   const { session, likesCount } = useSession();
   const [showMatches, setShowMatches] = useState(false);
@@ -136,11 +138,49 @@ export default function SwipeDeck() {
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden">
       <div className="relative w-[90%] max-w-sm aspect-[3/4] max-h-[70vh] mx-auto mt-4">
-        {isEmpty && !isLoading ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
-            <span className="text-6xl mb-4">🤷‍♂️</span>
-            <p className="text-lg font-medium">No more memes!</p>
-            <p className="text-sm text-slate-500 mt-1">Check back later or view your saved memes.</p>
+        {/* Out of Memes / Refilling State */}
+        {(isEmpty || isRefilling) && !isLoading ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-slate-900/95 rounded-3xl border border-slate-800 shadow-2xl z-20">
+            {isRefilling ? (
+              <div className="flex flex-col items-center">
+                <Loader2 className="animate-spin text-orange-400 w-12 h-12 mb-4" />
+                <h3 className="text-lg font-bold text-white">Hunting fresh memes...</h3>
+                <p className="text-xs text-slate-400 mt-1">Digging into Reddit's trending communities</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center max-w-xs">
+                <span className="text-5xl mb-3">🔥</span>
+                <h3 className="text-xl font-bold text-white mb-1">You're All Caught Up!</h3>
+                <p className="text-xs text-slate-400 mb-6 leading-relaxed">
+                  You swiped through all available memes. Choose what to do next:
+                </p>
+
+                <div className="flex flex-col gap-2.5 w-full">
+                  <button
+                    onClick={refillFeed}
+                    className="w-full py-3 px-4 bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white font-semibold text-sm rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95"
+                  >
+                    <Sparkles size={16} />
+                    Fetch More Memes from Internet
+                  </button>
+
+                  <button
+                    onClick={resetDislikesAndReload}
+                    className="w-full py-2.5 px-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-medium text-xs rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95"
+                  >
+                    <RotateCcw size={14} className="text-emerald-400" />
+                    Reshuffle Skipped Memes
+                  </button>
+
+                  <button
+                    onClick={() => navigate('/saved')}
+                    className="w-full py-2 px-4 text-slate-400 hover:text-amber-300 font-normal text-xs rounded-xl transition-colors mt-1"
+                  >
+                    ⭐ Browse Your Saved Memes
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ) : null}
         
@@ -160,7 +200,7 @@ export default function SwipeDeck() {
           </TinderCard>
         ))}
 
-        {isLoading && (
+        {isLoading && !isRefilling && (
           <div className="absolute inset-0 flex items-center justify-center bg-slate-900/50 rounded-3xl z-50">
             <Loader2 className="animate-spin text-white w-10 h-10" />
           </div>
@@ -177,7 +217,7 @@ export default function SwipeDeck() {
             }
           }}
           isSaved={isCurrentSaved}
-          disabled={!currentMeme}
+          disabled={!currentMeme || isRefilling}
         />
 
         {/* Keyboard shortcut hints */}

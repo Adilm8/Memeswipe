@@ -26,6 +26,9 @@ export default function SwipeDeck() {
   const activeMemes = useMemo(() => memes, [memes]);
   const currentMeme = activeMemes[activeMemes.length - 1];
 
+  // Render ONLY the top 2 cards to eliminate shadow accumulation and DOM overhead
+  const visibleMemes = useMemo(() => activeMemes.slice(-2), [activeMemes]);
+
   // Set of saved meme IDs
   const savedIds = useMemo(() => new Set(savedMemes.map(s => s.meme.id)), [savedMemes]);
 
@@ -97,7 +100,6 @@ export default function SwipeDeck() {
   // Global keyboard shortcuts (Left/Right arrow, Up/S to save, Space to enlarge)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger if user is typing in an input/textarea
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
         return;
@@ -129,43 +131,43 @@ export default function SwipeDeck() {
   const isCurrentSaved = currentMeme ? savedIds.has(currentMeme.id) : false;
 
   return (
-    <div className="relative w-full h-full flex flex-col items-center justify-between p-4 sm:p-6 overflow-hidden">
+    <div className="relative w-full h-full flex flex-col items-center justify-between p-2 sm:p-4 md:p-6 overflow-hidden">
       {/* Tinder Top Watermark Logo */}
-      <div className="flex items-center gap-2 mb-2 select-none opacity-40 hover:opacity-80 transition-opacity">
-        <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-[#fe3c72] to-[#ff655b] flex items-center justify-center text-xs text-white">
+      <div className="flex items-center gap-1.5 select-none opacity-40 hover:opacity-80 transition-opacity mb-1 flex-none">
+        <div className="w-5 h-5 rounded-lg bg-gradient-to-tr from-[#fe3c72] to-[#ff655b] flex items-center justify-center text-[10px] text-white">
           🔥
         </div>
-        <span className="font-bold text-xs tracking-wider uppercase text-slate-400">
+        <span className="font-bold text-[11px] tracking-wider uppercase text-slate-400">
           MemeSwipe Discover
         </span>
       </div>
 
-      {/* Main Tinder Card Deck Stage */}
-      <div className="flex-1 w-full flex items-center justify-center relative min-h-0">
-        <div className="relative w-full max-w-[420px] aspect-[4/5] max-h-[66vh] sm:max-h-[70vh] flex items-center justify-center">
+      {/* Main Tinder Card Deck Stage (scaled cleanly for all screen sizes) */}
+      <div className="flex-1 w-full flex items-center justify-center relative min-h-0 py-1">
+        <div className="relative w-full max-w-[360px] sm:max-w-[400px] md:max-w-[430px] h-[52vh] sm:h-[62vh] md:h-[68vh] max-h-[580px] flex items-center justify-center">
           {/* Empty Deck State */}
           {isEmpty ? (
-            <div className="w-full h-full bg-white rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-8 flex flex-col items-center justify-center text-center animate-fadeIn">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-[#fe3c72]/15 to-[#ff655b]/15 flex items-center justify-center text-4xl mb-4 border border-[#fe3c72]/20">
+            <div className="w-full h-full bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 flex flex-col items-center justify-center text-center animate-fadeIn">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-rose-50 flex items-center justify-center text-3xl sm:text-4xl mb-3 border border-rose-100">
                 🎉
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">You've Swiped Everything!</h3>
-              <p className="text-slate-500 text-xs sm:text-sm max-w-xs mb-6 leading-relaxed">
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-1.5">You've Swiped Everything!</h3>
+              <p className="text-slate-500 text-xs sm:text-sm max-w-xs mb-5 leading-relaxed">
                 You have browsed all cached memes in this session. Fetch fresh memes from Reddit or reshuffle your skipped cards.
               </p>
               
               {isRefilling ? (
-                <div className="flex flex-col items-center gap-2 py-4">
-                  <Loader2 className="animate-spin text-[#fe3c72] w-8 h-8" />
+                <div className="flex flex-col items-center gap-2 py-3">
+                  <Loader2 className="animate-spin text-[#fe3c72] w-7 h-7" />
                   <span className="text-xs font-semibold text-slate-600">Fetching latest memes from Reddit...</span>
                 </div>
               ) : (
-                <div className="flex flex-col gap-2.5 w-full max-w-xs">
+                <div className="flex flex-col gap-2 w-full max-w-xs">
                   <button
                     onClick={() => refillFeed()}
-                    className="w-full py-3 px-4 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] hover:opacity-95 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-md shadow-rose-500/20 flex items-center justify-center gap-2 transition-all active:scale-95"
+                    className="w-full py-2.5 px-4 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] hover:opacity-95 text-white font-semibold text-xs sm:text-sm rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95"
                   >
-                    <Sparkles size={16} />
+                    <Sparkles size={15} />
                     Fetch Fresh Memes from Reddit
                   </button>
 
@@ -174,9 +176,9 @@ export default function SwipeDeck() {
                       await resetDislikesAndReload();
                       refreshProfile();
                     }}
-                    className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-medium text-xs rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95"
+                    className="w-full py-2 px-4 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-medium text-xs rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95"
                   >
-                    <RotateCcw size={14} className="text-emerald-500" />
+                    <RotateCcw size={13} className="text-emerald-500" />
                     Reshuffle Skipped Memes
                   </button>
                 </div>
@@ -184,8 +186,8 @@ export default function SwipeDeck() {
             </div>
           ) : null}
 
-          {/* Active Cards */}
-          {activeMemes.map((meme) => (
+          {/* Active Cards: rendered cleanly with only top 2 cards, zero shadow accumulation */}
+          {visibleMemes.map((meme) => (
             <TinderCard
               key={meme.id}
               ref={(el: any) => {
@@ -202,15 +204,15 @@ export default function SwipeDeck() {
           ))}
 
           {isLoading && !isRefilling && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/70 backdrop-blur-sm rounded-3xl z-50">
-              <Loader2 className="animate-spin text-[#fe3c72] w-10 h-10" />
+            <div className="absolute inset-0 flex items-center justify-center bg-white/70 backdrop-blur-xs rounded-3xl z-50">
+              <Loader2 className="animate-spin text-[#fe3c72] w-8 h-8" />
             </div>
           )}
         </div>
       </div>
 
       {/* Action Buttons & Tinder Keyboard Legend */}
-      <div className="flex-none flex flex-col items-center mt-3 sm:mt-4 w-full">
+      <div className="flex-none flex flex-col items-center mt-2 sm:mt-3 w-full">
         <ActionButtons 
           onLike={() => triggerSwipe('right')} 
           onDislike={() => triggerSwipe('left')}
@@ -223,26 +225,26 @@ export default function SwipeDeck() {
           disabled={!currentMeme || isRefilling}
         />
 
-        {/* Tinder-style Desktop Keyboard Shortcut Bar (matches uploaded design) */}
-        <div className="mt-3 flex items-center justify-center gap-2 sm:gap-3 text-[11px] text-slate-400 select-none flex-wrap">
-          <span className="flex items-center gap-1 bg-white/80 border border-slate-200 px-2 py-0.5 rounded-full shadow-xs">
-            <kbd className="px-1 bg-slate-100 rounded text-slate-600 font-mono text-[10px]">←</kbd>
-            <span className="font-semibold text-slate-500 uppercase tracking-wider text-[10px]">Nope</span>
+        {/* Tinder Desktop Keyboard Shortcut Bar (hidden on mobile, visible on desktop) */}
+        <div className="hidden sm:flex mt-2.5 items-center justify-center gap-2 text-[10px] text-slate-400 select-none flex-wrap">
+          <span className="flex items-center gap-1 bg-white border border-slate-200 px-2 py-0.5 rounded-full">
+            <kbd className="px-1 bg-slate-100 rounded text-slate-600 font-mono text-[9px]">←</kbd>
+            <span className="font-semibold text-slate-500 uppercase tracking-wider text-[9px]">Nope</span>
           </span>
-          <span className="flex items-center gap-1 bg-white/80 border border-slate-200 px-2 py-0.5 rounded-full shadow-xs">
-            <kbd className="px-1 bg-slate-100 rounded text-slate-600 font-mono text-[10px]">↑ / S</kbd>
-            <span className="font-semibold text-slate-500 uppercase tracking-wider text-[10px]">{isCurrentSaved ? 'Saved' : 'Save'}</span>
+          <span className="flex items-center gap-1 bg-white border border-slate-200 px-2 py-0.5 rounded-full">
+            <kbd className="px-1 bg-slate-100 rounded text-slate-600 font-mono text-[9px]">↑ / S</kbd>
+            <span className="font-semibold text-slate-500 uppercase tracking-wider text-[9px]">{isCurrentSaved ? 'Saved' : 'Save'}</span>
           </span>
-          <span className="flex items-center gap-1 bg-white/80 border border-slate-200 px-2 py-0.5 rounded-full shadow-xs">
-            <kbd className="px-1 bg-slate-100 rounded text-slate-600 font-mono text-[10px]">→</kbd>
-            <span className="font-semibold text-slate-500 uppercase tracking-wider text-[10px]">Like</span>
+          <span className="flex items-center gap-1 bg-white border border-slate-200 px-2 py-0.5 rounded-full">
+            <kbd className="px-1 bg-slate-100 rounded text-slate-600 font-mono text-[9px]">→</kbd>
+            <span className="font-semibold text-slate-500 uppercase tracking-wider text-[9px]">Like</span>
           </span>
           <button
             onClick={() => currentMeme && setEnlargedMeme(currentMeme)}
-            className="flex items-center gap-1 bg-white/80 border border-slate-200 px-2 py-0.5 rounded-full shadow-xs hover:border-[#fe3c72]/40 hover:text-[#fe3c72] transition-colors"
+            className="flex items-center gap-1 bg-white border border-slate-200 px-2 py-0.5 rounded-full hover:border-[#fe3c72]/40 hover:text-[#fe3c72] transition-colors"
           >
-            <kbd className="px-1 bg-slate-100 rounded text-slate-600 font-mono text-[10px]">Space</kbd>
-            <span className="font-semibold text-slate-500 uppercase tracking-wider text-[10px]">Enlarge</span>
+            <kbd className="px-1 bg-slate-100 rounded text-slate-600 font-mono text-[9px]">Space</kbd>
+            <span className="font-semibold text-slate-500 uppercase tracking-wider text-[9px]">Enlarge</span>
           </button>
         </div>
       </div>

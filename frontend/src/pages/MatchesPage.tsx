@@ -59,7 +59,7 @@ export default function MatchesPage() {
           </button>
           <button
             onClick={() => navigate('/')}
-            className="px-4 py-1.5 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] hover:opacity-95 text-white rounded-full text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all active:scale-95"
+            className="px-4 py-1.5 bg-[#fe3c72] hover:bg-[#e02d60] text-white rounded-full text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all active:scale-95"
           >
             <Flame size={14} />
             <span>Swipe Memes</span>
@@ -84,7 +84,7 @@ export default function MatchesPage() {
             </p>
             <button
               onClick={() => navigate('/')}
-              className="px-5 py-2.5 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white rounded-xl text-xs font-bold shadow-md shadow-rose-500/20 flex items-center gap-2 transition-all active:scale-95"
+              className="px-5 py-2.5 bg-[#fe3c72] hover:bg-[#e02d60] text-white rounded-xl text-xs font-bold shadow-md shadow-rose-500/20 flex items-center gap-2 transition-all active:scale-95"
             >
               <Flame size={15} />
               Start Swiping Now
@@ -106,7 +106,7 @@ export default function MatchesPage() {
                 >
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-xs flex-none">
+                      <div className="w-12 h-12 rounded-full overflow-hidden bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-xs flex-none">
                         {match.avatar_url ? (
                           <img src={match.avatar_url} alt={match.nickname} className="w-full h-full object-cover" />
                         ) : (
@@ -124,7 +124,7 @@ export default function MatchesPage() {
                     <div className="flex items-center gap-2 flex-none">
                       <button
                         onClick={() => handleChatWithMatch(match.user_id)}
-                        className="px-3.5 py-1.5 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] hover:opacity-95 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all active:scale-95"
+                        className="px-3.5 py-1.5 bg-[#fe3c72] hover:bg-[#e02d60] text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
                       >
                         <MessageSquare size={13} />
                         <span>Chat</span>
@@ -145,7 +145,7 @@ export default function MatchesPage() {
                   {/* Similarity meter */}
                   <div className="w-full bg-slate-100 rounded-full h-2 mb-4 overflow-hidden">
                     <div 
-                      className="bg-gradient-to-r from-emerald-400 to-emerald-500 h-2 rounded-full transition-all duration-500" 
+                      className="bg-emerald-500 h-2 rounded-full transition-all duration-500" 
                       style={{ width: `${percent}%` }}
                     />
                   </div>

@@ -163,7 +163,7 @@ export default function Layout() {
           title="View Profile"
         >
           <div className="relative">
-            <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] flex items-center justify-center font-bold text-xs text-white shadow-2xs">
+            <div className="w-8 h-8 rounded-full overflow-hidden bg-[#fe3c72] flex items-center justify-center font-bold text-xs text-white shadow-2xs">
               {avatarUrl ? (
                 <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
               ) : (
@@ -182,7 +182,7 @@ export default function Layout() {
         {/* Center: Memeswipe Logo / Direct link to Swipe */}
         <button 
           onClick={() => navigate('/')}
-          className="flex items-center gap-1 font-extrabold text-sm sm:text-base tracking-tight bg-gradient-to-r from-[#fe3c72] via-[#ff655b] to-[#ff7854] bg-clip-text text-transparent hover:opacity-90 transition-opacity flex-none"
+          className="flex items-center gap-1 font-extrabold text-sm sm:text-base tracking-tight text-[#fe3c72] hover:opacity-90 transition-opacity flex-none"
         >
           <img src="/favicon-32x32.png" alt="Memeswipe" className="w-5 h-5 object-contain flex-none" />
           <span>Memeswipe</span>
@@ -254,7 +254,7 @@ export default function Layout() {
           {session?.is_guest && (
             <button
               onClick={() => openAuthModal('login')}
-              className="ml-1 px-2.5 py-1 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white rounded-full text-[11px] font-bold shadow-2xs"
+              className="ml-1 px-2.5 py-1 bg-[#fe3c72] hover:bg-[#e02d60] text-white rounded-full text-[11px] font-bold shadow-2xs transition-colors"
             >
               Log In
             </button>
@@ -266,8 +266,8 @@ export default function Layout() {
       {/* DESKTOP LEFT SIDEBAR (>= lg screens): Classic Tinder Panel */}
       {/* ========================================================= */}
       <aside className="hidden lg:flex w-[280px] lg:w-[290px] xl:w-[310px] bg-white border-r border-slate-200/90 flex-col flex-none z-30 shadow-2xs h-full">
-        {/* Top Profile Header: Gradient Pink/Coral Bar */}
-        <div className="flex-none h-16 bg-gradient-to-r from-[#fe3c72] via-[#ff655b] to-[#ff7854] px-3.5 py-2.5 flex items-center justify-between shadow-xs">
+        {/* Top Profile Header: Solid Coral Bar */}
+        <div className="flex-none h-16 bg-[#fe3c72] px-3.5 py-2.5 flex items-center justify-between shadow-xs">
           {/* User Profile Info (clickable to view Profile) */}
           <button 
             onClick={() => navigate('/profile')}
@@ -329,14 +329,14 @@ export default function Layout() {
             className={clsx(
               "w-full p-2.5 rounded-2xl flex items-center gap-3 transition-all text-left group",
               isSwipingRoute
-                ? "bg-gradient-to-r from-rose-50 to-orange-50 border-2 border-[#fe3c72]/30 shadow-2xs"
+                ? "bg-rose-50 border-2 border-[#fe3c72]/40 shadow-2xs"
                 : "bg-slate-50 hover:bg-slate-100/80 border border-slate-200"
             )}
           >
             <div className={clsx(
               "w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 shadow-2xs flex-none p-1.5",
               isSwipingRoute
-                ? "bg-gradient-to-tr from-[#fe3c72] to-[#ff655b]"
+                ? "bg-[#fe3c72]"
                 : "bg-white border-2 border-[#fe3c72]"
             )}>
               <img src="/favicon-32x32.png" alt="Memeswipe" className="w-full h-full object-contain" />
@@ -517,7 +517,7 @@ export default function Layout() {
                   </p>
                   <button
                     onClick={() => setIsSearchOpen(true)}
-                    className="px-3 py-1.5 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 hover:opacity-95"
+                    className="px-3 py-1.5 bg-[#fe3c72] hover:bg-[#e02d60] text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition-colors"
                   >
                     <UserPlus size={12} />
                     <span>Find Friends</span>
@@ -554,7 +554,7 @@ export default function Layout() {
                             <div className={clsx(
                               "w-10 h-10 rounded-full p-0.5 transition-transform group-hover:scale-105",
                               isCurrent 
-                                ? "bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] shadow-xs" 
+                                ? "bg-[#fe3c72] shadow-xs" 
                                 : "bg-slate-200 group-hover:bg-[#fe3c72]/50"
                             )}>
                               <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center text-xs font-bold text-slate-700">
@@ -592,7 +592,7 @@ export default function Layout() {
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
                             <div className="relative flex-none">
-                              <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] flex items-center justify-center text-white font-bold text-xs shadow-2xs">
+                              <div className="w-9 h-9 rounded-full overflow-hidden bg-[#fe3c72] flex items-center justify-center text-white font-bold text-xs shadow-2xs">
                                 {f.avatar_url ? (
                                   <img
                                     src={f.avatar_url}
@@ -685,14 +685,14 @@ export default function Layout() {
                     className={`flex gap-2 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     {msg.sender === 'ai' && (
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] flex items-center justify-center text-white flex-none text-[11px] shadow-2xs">
+                      <div className="w-6 h-6 rounded-full bg-[#fe3c72] flex items-center justify-center text-white flex-none text-[11px] shadow-2xs">
                         🤖
                       </div>
                     )}
                     <div
                       className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${
                         msg.sender === 'user'
-                          ? 'bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white font-medium rounded-tr-xs shadow-xs'
+                          ? 'bg-[#fe3c72] text-white font-medium rounded-tr-xs shadow-xs'
                           : 'bg-white border border-slate-200/80 text-slate-700 rounded-tl-xs shadow-2xs whitespace-pre-line'
                       }`}
                     >
@@ -703,7 +703,7 @@ export default function Layout() {
 
                 {isAiLoading && (
                   <div className="flex gap-2 justify-start items-center">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] flex items-center justify-center text-white flex-none text-[11px] shadow-2xs">
+                    <div className="w-6 h-6 rounded-full bg-[#fe3c72] flex items-center justify-center text-white flex-none text-[11px] shadow-2xs">
                       🤖
                     </div>
                     <div className="bg-white border border-slate-200/80 rounded-2xl px-3 py-2 flex items-center gap-2 shadow-2xs text-slate-500">
@@ -734,7 +734,7 @@ export default function Layout() {
                   type="button"
                   onClick={() => handleSendMessage()}
                   disabled={!chatInput.trim() || isAiLoading}
-                  className="p-2 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white rounded-xl hover:opacity-90 transition-all disabled:opacity-30 active:scale-95 shadow-2xs"
+                  className="p-2 bg-[#fe3c72] hover:bg-[#e02d60] text-white rounded-xl transition-all disabled:opacity-30 active:scale-95 shadow-2xs"
                   title="Send message"
                 >
                   {isAiLoading ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}

@@ -47,7 +47,7 @@ export default function ProfilePage() {
 
         <button
           onClick={() => navigate('/')}
-          className="px-4 py-1.5 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] hover:opacity-95 text-white rounded-full text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all active:scale-95"
+          className="px-4 py-1.5 bg-[#fe3c72] hover:bg-[#e02d60] text-white rounded-full text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all active:scale-95"
         >
           <Flame size={14} />
           <span>Swipe Memes</span>
@@ -70,7 +70,7 @@ export default function ProfilePage() {
 
           {/* Avatar with click-to-edit indicator */}
           <div className="relative group cursor-pointer" onClick={() => setIsEditModalOpen(true)}>
-            <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md bg-gradient-to-tr from-[#fe3c72] via-[#ff655b] to-[#ff7854] flex items-center justify-center text-white font-black text-3xl">
+            <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md bg-[#fe3c72] flex items-center justify-center text-white font-black text-3xl">
               {avatarUrl ? (
                 <img
                   src={avatarUrl}
@@ -130,7 +130,7 @@ export default function ProfilePage() {
 
           {/* Upgrade / Account Action Banner */}
           {session.is_guest ? (
-            <div className="mt-5 w-full bg-gradient-to-br from-rose-50/70 via-orange-50/70 to-amber-50/70 border border-[#fe3c72]/20 rounded-2xl p-4 flex flex-col items-center text-center gap-2.5">
+            <div className="mt-5 w-full bg-rose-50 border border-rose-200 rounded-2xl p-4 flex flex-col items-center text-center gap-2.5">
               <div className="flex items-center gap-1.5 text-[#fe3c72] font-bold text-xs">
                 <Sparkles size={15} />
                 <span>Keep your memes forever</span>
@@ -142,7 +142,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => openAuthModal('register')}
-                  className="flex-1 py-2.5 px-3 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] hover:opacity-95 text-white rounded-xl text-xs font-bold shadow-md shadow-rose-500/20 transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                  className="flex-1 py-2.5 px-3 bg-[#fe3c72] hover:bg-[#e02d60] text-white rounded-xl text-xs font-bold shadow-md shadow-rose-500/20 transition-all flex items-center justify-center gap-1.5 active:scale-95"
                 >
                   <UserPlus size={14} />
                   <span>Create Account</span>

@@ -110,7 +110,7 @@ export default function AIChatPanel() {
             <div className={clsx(
               "max-w-[85%] rounded-2xl p-4 shadow-xs text-sm leading-relaxed",
               m.role === 'user' 
-                ? "bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white rounded-tr-xs" 
+                ? "bg-[#fe3c72] text-white rounded-tr-xs" 
                 : "bg-white text-slate-800 border border-slate-200/90 rounded-tl-xs"
             )}>
               <p className="whitespace-pre-wrap">{m.content}</p>
@@ -176,7 +176,7 @@ export default function AIChatPanel() {
             <button 
               onClick={() => sendMessage(input)} 
               disabled={loading || !input.trim()} 
-              className="p-2.5 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] hover:opacity-95 text-white rounded-xl shadow-xs disabled:opacity-40 transition-all active:scale-95"
+              className="p-2.5 bg-[#fe3c72] hover:bg-[#e02d60] text-white rounded-xl shadow-xs disabled:opacity-40 transition-all active:scale-95"
             >
               <Send size={18} />
             </button>

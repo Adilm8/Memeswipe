@@ -199,7 +199,7 @@ export default function SwipeDeck() {
                 <div className="flex flex-col gap-2 w-full max-w-xs">
                   <button
                     onClick={() => refillFeed()}
-                    className="w-full py-2.5 px-4 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] hover:opacity-95 text-white font-semibold text-xs sm:text-sm rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95"
+                    className="w-full py-2.5 px-4 bg-[#fe3c72] hover:bg-[#e02d60] text-white font-semibold text-xs sm:text-sm rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer"
                   >
                     <Sparkles size={15} />
                     Fetch Fresh Memes from Reddit

@@ -117,7 +117,7 @@ export default function EditProfileModal({ isOpen, onClose }: EditProfileModalPr
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-rose-50/50 to-orange-50/50">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-rose-50/60">
           <div className="flex items-center gap-2">
             <span className="p-1.5 rounded-xl bg-[#fe3c72]/10 text-[#fe3c72]">
               <Sparkles size={18} />
@@ -144,7 +144,7 @@ export default function EditProfileModal({ isOpen, onClose }: EditProfileModalPr
           {/* Live Avatar Preview */}
           <div className="flex flex-col items-center justify-center gap-3">
             <div className="relative group">
-              <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md bg-gradient-to-tr from-[#fe3c72] via-[#ff655b] to-[#ff7854] flex items-center justify-center text-white font-black text-3xl">
+              <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md bg-[#fe3c72] flex items-center justify-center text-white font-black text-3xl">
                 {avatarUrl ? (
                   <img
                     src={avatarUrl}
@@ -168,7 +168,7 @@ export default function EditProfileModal({ isOpen, onClose }: EditProfileModalPr
               )}
             </div>
             <span className="text-xs text-slate-400 font-medium">
-              {avatarUrl ? 'Avatar selected' : 'Initial gradient avatar active'}
+              {avatarUrl ? 'Avatar selected' : 'Initial avatar active'}
             </span>
           </div>
 
@@ -305,7 +305,7 @@ export default function EditProfileModal({ isOpen, onClose }: EditProfileModalPr
             <button
               type="submit"
               disabled={isSaving}
-              className="px-6 py-2.5 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] hover:opacity-95 text-white rounded-xl text-xs font-bold shadow-md shadow-rose-500/20 transition-all flex items-center gap-2 active:scale-95 disabled:opacity-50"
+              className="px-6 py-2.5 bg-[#fe3c72] hover:bg-[#e02d60] text-white rounded-xl text-xs font-bold shadow-md shadow-rose-500/20 transition-all flex items-center gap-2 active:scale-95 disabled:opacity-50 cursor-pointer"
             >
               {isSaving ? (
                 <>

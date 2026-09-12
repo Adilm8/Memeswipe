@@ -25,7 +25,7 @@ export default function AIPage() {
 
         <button
           onClick={() => navigate('/')}
-          className="px-4 py-1.5 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] hover:opacity-95 text-white rounded-full text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all active:scale-95"
+          className="px-4 py-1.5 bg-[#fe3c72] hover:bg-[#e02d60] text-white rounded-full text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all active:scale-95"
         >
           <Flame size={14} />
           <span>Swipe Memes</span>

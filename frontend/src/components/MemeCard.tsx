@@ -57,7 +57,7 @@ export default function MemeCard({ meme, onUnsave, onClick }: Props) {
       </div>
 
       {/* Hover/Touch Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3">
+      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3">
         <div className="flex justify-end gap-1.5">
           <button 
             onClick={handleShare}

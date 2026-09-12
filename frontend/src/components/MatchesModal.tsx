@@ -17,7 +17,7 @@ export default function MatchesModal({ onClose }: { onClose: () => void }) {
         <div className="flex flex-col gap-3">
           <button 
             onClick={() => { onClose(); navigate('/matches'); }}
-            className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-semibold shadow-lg hover:opacity-90"
+            className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-semibold shadow-lg transition-colors cursor-pointer"
           >
             View All Matches
           </button>

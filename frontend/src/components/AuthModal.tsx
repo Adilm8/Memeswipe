@@ -79,7 +79,7 @@ export default function AuthModal() {
         {/* Top Header with Close */}
         <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#fe3c72] to-[#ff655b] flex items-center justify-center text-sm shadow-xs text-white">
+            <div className="w-8 h-8 rounded-xl bg-[#fe3c72] flex items-center justify-center text-sm shadow-xs text-white">
               🔥
             </div>
             <h3 className="font-extrabold text-lg text-slate-900">
@@ -98,7 +98,7 @@ export default function AuthModal() {
 
         {/* Guest conversion banner when registering */}
         {!isLogin && session?.is_guest && (
-          <div className="mx-6 mt-4 p-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 flex items-start gap-2.5 text-xs text-amber-800">
+          <div className="mx-6 mt-4 p-3 rounded-2xl bg-amber-50 border border-amber-200 flex items-start gap-2.5 text-xs text-amber-800">
             <Sparkles size={16} className="text-amber-500 flex-shrink-0 mt-0.5" />
             <span>
               Your current guest likes and saved memes will automatically be linked to your new account!
@@ -215,7 +215,7 @@ export default function AuthModal() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full mt-2 py-3 px-4 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] hover:opacity-95 text-white font-bold rounded-xl text-sm shadow-md shadow-rose-500/20 disabled:opacity-50 flex items-center justify-center gap-2 transition-all active:scale-95"
+            className="w-full mt-2 py-3 px-4 bg-[#fe3c72] hover:bg-[#e02d60] text-white font-bold rounded-xl text-sm shadow-md shadow-rose-500/20 disabled:opacity-50 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer"
           >
             {isSubmitting ? (
               <>

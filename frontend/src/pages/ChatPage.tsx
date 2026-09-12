@@ -63,7 +63,7 @@ export default function ChatPage() {
       {/* Top Header Bar */}
       <div className="flex-none bg-white border-b border-slate-200/90 px-4 sm:px-6 py-3.5 flex items-center justify-between shadow-xs z-10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] flex items-center justify-center text-white shadow-2xs">
+          <div className="w-10 h-10 rounded-2xl bg-[#fe3c72] flex items-center justify-center text-white shadow-2xs">
             <Users size={20} />
           </div>
           <div>
@@ -82,7 +82,7 @@ export default function ChatPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsSearchOpen(true)}
-            className="px-3.5 py-2 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white rounded-xl text-xs font-bold shadow-xs hover:opacity-95 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+            className="px-3.5 py-2 bg-[#fe3c72] hover:bg-[#e02d60] text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
           >
             <UserPlus size={14} />
             <span className="hidden sm:inline">Find Friends</span>
@@ -122,7 +122,7 @@ export default function ChatPage() {
                       className="flex flex-col items-center gap-1 flex-none group cursor-pointer"
                     >
                       <div className="relative">
-                        <div className="w-11 h-11 rounded-full p-0.5 bg-gradient-to-tr from-[#fe3c72] to-[#ff6036]">
+                        <div className="w-11 h-11 rounded-full p-0.5 bg-[#fe3c72]">
                           <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center text-xs font-bold text-slate-700">
                             {f.avatar_url ? (
                               <img src={f.avatar_url} alt={f.nickname} className="w-full h-full object-cover" />
@@ -224,7 +224,7 @@ export default function ChatPage() {
                   </p>
                   <button
                     onClick={() => navigate('/')}
-                    className="px-4 py-2 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white rounded-xl text-xs font-bold shadow-xs hover:opacity-95 cursor-pointer"
+                    className="px-4 py-2 bg-[#fe3c72] hover:bg-[#e02d60] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
                   >
                     Start Swiping
                   </button>
@@ -243,7 +243,7 @@ export default function ChatPage() {
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-11 h-11 rounded-full overflow-hidden bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs shadow-2xs flex-none">
+                            <div className="w-11 h-11 rounded-full overflow-hidden bg-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-2xs flex-none">
                               {m.avatar_url ? (
                                 <img src={m.avatar_url} alt={m.nickname} className="w-full h-full object-cover" />
                               ) : (
@@ -269,7 +269,7 @@ export default function ChatPage() {
                         <div className="space-y-1">
                           <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                             <div 
-                              className="h-full bg-gradient-to-r from-emerald-400 to-[#fe3c72] rounded-full transition-all duration-500"
+                              className="h-full bg-emerald-500 rounded-full transition-all duration-500"
                               style={{ width: `${Math.min(pct, 100)}%` }}
                             />
                           </div>
@@ -289,7 +289,7 @@ export default function ChatPage() {
                             <button
                               onClick={() => handleConnectAndChat(m.user_id)}
                               disabled={isAdding}
-                              className="w-full py-2 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] hover:opacity-95 text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer disabled:opacity-50"
+                              className="w-full py-2 bg-[#fe3c72] hover:bg-[#e02d60] text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer disabled:opacity-50"
                             >
                               {isAdding ? (
                                 <Loader2 size={14} className="animate-spin" />
@@ -308,7 +308,7 @@ export default function ChatPage() {
             </div>
 
             {/* Feature Spotlight: Social & Meme Sharing */}
-            <div className="bg-gradient-to-br from-white to-rose-50/50 rounded-2xl border border-rose-100 p-5 shadow-2xs space-y-3">
+            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-3">
               <div className="flex items-center gap-2 text-[#fe3c72] font-bold text-xs uppercase tracking-wider">
                 <Sparkles size={14} />
                 <span>Feature Spotlight</span>
@@ -329,7 +329,7 @@ export default function ChatPage() {
                 </button>
                 <button
                   onClick={() => navigate('/')}
-                  className="px-4 py-2 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white rounded-xl text-xs font-bold shadow-2xs hover:opacity-95 flex items-center gap-1.5 transition-all cursor-pointer"
+                  className="px-4 py-2 bg-[#fe3c72] hover:bg-[#e02d60] text-white rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer"
                 >
                   <Flame size={13} />
                   <span>Discover More Memes</span>

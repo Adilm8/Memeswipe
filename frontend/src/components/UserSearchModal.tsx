@@ -84,7 +84,7 @@ export default function UserSearchModal({ isOpen, onClose, onOpenChat }: Props) 
           {/* Header */}
           <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] flex items-center justify-center text-white shadow-2xs">
+              <div className="w-8 h-8 rounded-xl bg-[#fe3c72] flex items-center justify-center text-white shadow-2xs">
                 <Search size={16} />
               </div>
               <div>
@@ -157,7 +157,7 @@ export default function UserSearchModal({ isOpen, onClose, onOpenChat }: Props) 
                     className="p-3 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between gap-3 transition-colors shadow-2xs"
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <div className="w-11 h-11 rounded-full overflow-hidden bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] flex items-center justify-center text-white font-bold text-sm flex-none shadow-2xs">
+                      <div className="w-11 h-11 rounded-full overflow-hidden bg-[#fe3c72] flex items-center justify-center text-white font-bold text-sm flex-none shadow-2xs">
                         {user.avatar_url ? (
                           <img src={user.avatar_url} alt={user.nickname} className="w-full h-full object-cover" />
                         ) : (
@@ -199,7 +199,7 @@ export default function UserSearchModal({ isOpen, onClose, onOpenChat }: Props) 
                           <button
                             onClick={() => handleStartChat(user.user_id)}
                             title="Open Chat"
-                            className="px-2.5 py-1 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white rounded-xl hover:opacity-95 transition-all shadow-2xs active:scale-95 flex items-center gap-1 text-xs font-bold"
+                            className="px-2.5 py-1 bg-[#fe3c72] hover:bg-[#e02d60] text-white rounded-xl transition-all shadow-2xs active:scale-95 flex items-center gap-1 text-xs font-bold cursor-pointer"
                           >
                             <MessageSquare size={13} />
                             <span>Chat</span>
@@ -209,7 +209,7 @@ export default function UserSearchModal({ isOpen, onClose, onOpenChat }: Props) 
                         <button
                           onClick={() => handleAddFriend(user.user_id)}
                           disabled={isAdding}
-                          className="px-3 py-1.5 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] hover:opacity-95 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-2xs active:scale-95 disabled:opacity-50"
+                          className="px-3 py-1.5 bg-[#fe3c72] hover:bg-[#e02d60] text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-2xs active:scale-95 disabled:opacity-50 cursor-pointer"
                         >
                           {isAdding ? (
                             <Loader2 size={12} className="animate-spin" />

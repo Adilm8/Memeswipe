@@ -192,7 +192,7 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
 
           {/* Friend Avatar */}
           <div className="relative flex-none">
-            <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] flex items-center justify-center font-bold text-sm text-white shadow-2xs">
+            <div className="w-10 h-10 rounded-full overflow-hidden bg-[#fe3c72] flex items-center justify-center font-bold text-sm text-white shadow-2xs">
               {friend?.avatar_url ? (
                 <img
                   src={friend.avatar_url}
@@ -306,7 +306,7 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
               >
                 {/* Friend Avatar for incoming */}
                 {!isMine && (
-                  <div className="w-7 h-7 rounded-full overflow-hidden bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white text-[10px] font-bold flex-none shadow-2xs mb-1">
+                  <div className="w-7 h-7 rounded-full overflow-hidden bg-indigo-600 flex items-center justify-center text-white text-[10px] font-bold flex-none shadow-2xs mb-1">
                     {friend?.avatar_url ? (
                       <img
                         src={friend.avatar_url}
@@ -328,7 +328,7 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
                   <div
                     className={`rounded-2xl p-3 shadow-xs transition-all overflow-hidden ${
                       isMine
-                        ? 'bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white rounded-br-xs'
+                        ? 'bg-[#fe3c72] text-white rounded-br-xs'
                         : 'bg-white border border-slate-200 text-slate-800 rounded-bl-xs'
                     }`}
                   >
@@ -418,7 +418,7 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
         {/* Live Typing indicator for AI persona or friend */}
         {isTyping && (
           <div className="flex items-center gap-2 justify-start">
-            <div className="w-7 h-7 rounded-full overflow-hidden bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white text-[10px] font-bold flex-none shadow-2xs">
+            <div className="w-7 h-7 rounded-full overflow-hidden bg-indigo-600 flex items-center justify-center text-white text-[10px] font-bold flex-none shadow-2xs">
               {friend?.avatar_url ? (
                 <img
                   src={friend.avatar_url}
@@ -464,7 +464,7 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
           <button
             type="button"
             onClick={() => setAttachedMeme(null)}
-            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-100 rounded-full transition-colors"
+            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-100 rounded-full transition-colors cursor-pointer"
             title="Remove attachment"
           >
             <X size={16} />
@@ -483,7 +483,7 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
           type="button"
           onClick={handleOpenPicker}
           title="Attach saved meme"
-          className="p-2.5 text-slate-500 hover:text-[#fe3c72] hover:bg-rose-50 border border-slate-200 rounded-xl transition-colors flex-none"
+          className="p-2.5 text-slate-500 hover:text-[#fe3c72] hover:bg-rose-50 border border-slate-200 rounded-xl transition-colors flex-none cursor-pointer"
         >
           <ImageIcon size={18} />
         </button>
@@ -499,7 +499,7 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
         <button
           type="submit"
           disabled={(!inputText.trim() && !attachedMeme) || isSending}
-          className="p-2.5 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] hover:opacity-95 text-white rounded-xl shadow-md shadow-rose-500/20 transition-all active:scale-95 disabled:opacity-40 flex-none"
+          className="p-2.5 bg-[#fe3c72] hover:bg-[#e02d60] text-white rounded-xl shadow-md shadow-rose-500/20 transition-all active:scale-95 disabled:opacity-40 flex-none cursor-pointer"
           title="Send"
         >
           {isSending ? (
@@ -524,7 +524,7 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
           >
             <div className="p-3.5 sm:p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70 gap-2">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] flex items-center justify-center text-white text-xs">
+                <div className="w-7 h-7 rounded-lg bg-[#fe3c72] flex items-center justify-center text-white text-xs">
                   <ImageIcon size={14} />
                 </div>
                 <h4 className="font-bold text-sm text-slate-800 hidden sm:inline">Attach Meme</h4>
@@ -597,7 +597,7 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
                         alt={meme.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2">
+                      <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2">
                         <p className="text-[11px] font-bold text-white line-clamp-2">
                           {meme.title}
                         </p>

@@ -101,7 +101,7 @@ export default function SendMemeModal({
           {/* Header */}
           <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] flex items-center justify-center text-white shadow-2xs">
+              <div className="w-8 h-8 rounded-xl bg-[#fe3c72] flex items-center justify-center text-white shadow-2xs">
                 <Send size={15} />
               </div>
               <div>
@@ -149,7 +149,7 @@ export default function SendMemeModal({
               </p>
               <button
                 onClick={handleOpenChat}
-                className="px-4 py-2 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5"
+                className="px-4 py-2 bg-[#fe3c72] hover:bg-[#e02d60] text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
               >
                 <MessageSquare size={14} />
                 <span>Open Chat</span>
@@ -223,7 +223,7 @@ export default function SendMemeModal({
                           }`}
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold flex-none shadow-2xs">
+                            <div className="w-9 h-9 rounded-full overflow-hidden bg-indigo-600 flex items-center justify-center text-white text-xs font-bold flex-none shadow-2xs">
                               {f.avatar_url ? (
                                 <img
                                   src={f.avatar_url}
@@ -268,7 +268,7 @@ export default function SendMemeModal({
                   type="button"
                   onClick={handleSend}
                   disabled={!selectedFriendId || isSending || filteredFriends.length === 0}
-                  className="w-full py-2.5 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] hover:opacity-95 text-white rounded-xl text-xs font-bold shadow-md shadow-rose-500/20 flex items-center justify-center gap-2 transition-all active:scale-98 disabled:opacity-40"
+                  className="w-full py-2.5 bg-[#fe3c72] hover:bg-[#e02d60] text-white rounded-xl text-xs font-bold shadow-md shadow-rose-500/20 flex items-center justify-center gap-2 transition-all active:scale-98 disabled:opacity-40 cursor-pointer"
                 >
                   {isSending ? (
                     <>

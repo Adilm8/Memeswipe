@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Match, Meme } from '@/api/types';
 import { fetchMatches } from '@/api/profile';
+import { addFriend } from '@/api/chat';
 import MemeModal from '@/components/MemeModal';
-import { Loader2, Flame, ArrowLeft } from 'lucide-react';
+import UserSearchModal from '@/components/UserSearchModal';
+import { Loader2, Flame, ArrowLeft, MessageSquare, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function MatchesPage() {
@@ -11,6 +13,7 @@ export default function MatchesPage() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   useEffect(() => {
     fetchMatches()
@@ -18,6 +21,13 @@ export default function MatchesPage() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+
+  const handleChatWithMatch = async (matchUserId: string) => {
+    try {
+      await addFriend(matchUserId);
+    } catch (e) {}
+    navigate(`/chat/${matchUserId}`);
+  };
 
   return (
     <div className="flex flex-col h-full bg-[#f0f2f5]">
@@ -39,13 +49,22 @@ export default function MatchesPage() {
           </h2>
         </div>
 
-        <button
-          onClick={() => navigate('/')}
-          className="px-4 py-1.5 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] hover:opacity-95 text-white rounded-full text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all active:scale-95"
-        >
-          <Flame size={14} />
-          <span>Swipe Memes</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsSearchOpen(true)}
+            className="px-3.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-full text-xs font-bold shadow-2xs flex items-center gap-1.5 transition-all"
+          >
+            <Search size={13} />
+            <span>Find Friends</span>
+          </button>
+          <button
+            onClick={() => navigate('/')}
+            className="px-4 py-1.5 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] hover:opacity-95 text-white rounded-full text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all active:scale-95"
+          >
+            <Flame size={14} />
+            <span>Swipe Memes</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Content Area */}
@@ -102,9 +121,19 @@ export default function MatchesPage() {
                       </div>
                     </div>
 
-                    <span className="px-3 py-1 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-full text-xs font-extrabold shadow-2xs">
-                      {percent}% Match
-                    </span>
+                    <div className="flex items-center gap-2 flex-none">
+                      <button
+                        onClick={() => handleChatWithMatch(match.user_id)}
+                        className="px-3.5 py-1.5 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] hover:opacity-95 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all active:scale-95"
+                      >
+                        <MessageSquare size={13} />
+                        <span>Chat</span>
+                      </button>
+
+                      <span className="px-3 py-1 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-full text-xs font-extrabold shadow-2xs">
+                        {percent}% Match
+                      </span>
+                    </div>
                   </div>
 
                   {match.bio && (
@@ -157,6 +186,16 @@ export default function MatchesPage() {
       <MemeModal
         meme={selectedMeme}
         onClose={() => setSelectedMeme(null)}
+      />
+
+      {/* User Search Modal */}
+      <UserSearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        onOpenChat={(uid) => {
+          setIsSearchOpen(false);
+          navigate(`/chat/${uid}`);
+        }}
       />
     </div>
   );

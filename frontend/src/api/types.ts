@@ -66,3 +66,51 @@ export interface AIMessage {
   role: 'user' | 'assistant';
   content: string;
 }
+
+export interface UserSearchResult {
+  user_id: string;
+  username?: string | null;
+  nickname: string;
+  bio?: string | null;
+  avatar_url?: string | null;
+  is_friend: boolean;
+  compatibility: number;
+}
+
+export interface FriendItem {
+  user_id: string;
+  username?: string | null;
+  nickname: string;
+  bio?: string | null;
+  avatar_url?: string | null;
+  compatibility: number;
+  last_message?: string | null;
+  last_message_time?: string | null;
+  unread_count: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  meme_id?: string | null;
+  meme_title?: string | null;
+  meme_image_url?: string | null;
+  is_read: boolean;
+  created_at: string;
+  is_mine: boolean;
+}
+
+export interface Conversation {
+  friend_id: string;
+  username?: string | null;
+  nickname: string;
+  avatar_url?: string | null;
+  bio?: string | null;
+  compatibility: number;
+  last_message?: string | null;
+  last_message_time?: string | null;
+  unread_count: number;
+}
+

@@ -67,3 +67,31 @@ class SavedMeme(Base):
     
     user = relationship("GuestUser", back_populates="saved_memes")
     meme = relationship("Meme", back_populates="saved_by")
+
+class Friendship(Base):
+    __tablename__ = "friendships"
+    id: Mapped[uuid.UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(PGUUID(as_uuid=True), ForeignKey("guest_users.id", ondelete="CASCADE"), index=True)
+    friend_id: Mapped[uuid.UUID] = mapped_column(PGUUID(as_uuid=True), ForeignKey("guest_users.id", ondelete="CASCADE"), index=True)
+    status: Mapped[str] = mapped_column(String, default="accepted")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    
+    __table_args__ = (UniqueConstraint('user_id', 'friend_id', name='uq_friendship'),)
+    
+    user = relationship("GuestUser", foreign_keys=[user_id])
+    friend = relationship("GuestUser", foreign_keys=[friend_id])
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+    id: Mapped[uuid.UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    sender_id: Mapped[uuid.UUID] = mapped_column(PGUUID(as_uuid=True), ForeignKey("guest_users.id", ondelete="CASCADE"), index=True)
+    receiver_id: Mapped[uuid.UUID] = mapped_column(PGUUID(as_uuid=True), ForeignKey("guest_users.id", ondelete="CASCADE"), index=True)
+    content: Mapped[str] = mapped_column(String, nullable=False)
+    meme_id: Mapped[Optional[uuid.UUID]] = mapped_column(PGUUID(as_uuid=True), ForeignKey("memes.id", ondelete="SET NULL"), nullable=True)
+    is_read: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    
+    sender = relationship("GuestUser", foreign_keys=[sender_id])
+    receiver = relationship("GuestUser", foreign_keys=[receiver_id])
+    meme = relationship("Meme")
+

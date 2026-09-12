@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Trash2, Share2, ChevronLeft, ChevronRight, Check, ExternalLink, User, Sparkles, Loader2 } from 'lucide-react';
+import { X, Trash2, Share2, ChevronLeft, ChevronRight, Check, ExternalLink, User, Sparkles, Loader2, Send } from 'lucide-react';
 import { Meme } from '@/api/types';
 import { explainMeme } from '@/api/ai';
+import SendMemeModal from '@/components/SendMemeModal';
 
 interface MemeModalProps {
   meme: Meme | null;
@@ -26,6 +27,7 @@ export default function MemeModal({
   const [copied, setCopied] = useState(false);
   const [explanation, setExplanation] = useState<string | null>(null);
   const [isExplaining, setIsExplaining] = useState(false);
+  const [isSendModalOpen, setIsSendModalOpen] = useState(false);
 
   // Reset explanation when meme changes
   useEffect(() => {
@@ -173,6 +175,18 @@ export default function MemeModal({
               )}
 
               <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsSendModalOpen(true);
+                }}
+                title="Send to friend via chat"
+                className="px-2.5 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 rounded-full transition-colors flex items-center gap-1.5 text-xs font-semibold"
+              >
+                <Send size={13} />
+                <span className="hidden sm:inline">Send to Friend</span>
+              </button>
+
+              <button
                 onClick={handleShare}
                 title="Copy post link"
                 className="p-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-full text-white transition-colors flex items-center gap-1 text-xs"
@@ -250,6 +264,13 @@ export default function MemeModal({
             </button>
           </div>
         </motion.div>
+
+        {/* Send to Friend Modal */}
+        <SendMemeModal
+          meme={meme}
+          isOpen={isSendModalOpen}
+          onClose={() => setIsSendModalOpen(false)}
+        />
       </div>
     </AnimatePresence>
   );

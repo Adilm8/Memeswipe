@@ -1,15 +1,16 @@
 import { Meme } from '@/api/types';
-import { ExternalLink, User, Maximize2, Sparkles } from 'lucide-react';
+import { ExternalLink, User, Maximize2, Sparkles, Send } from 'lucide-react';
 import { useRef } from 'react';
 
 interface SwipeCardProps {
   meme: Meme;
   onEnlarge?: (meme: Meme) => void;
   onExplain?: (meme: Meme) => void;
+  onShare?: (meme: Meme) => void;
   isExplaining?: boolean;
 }
 
-export default function SwipeCard({ meme, onEnlarge, onExplain, isExplaining }: SwipeCardProps) {
+export default function SwipeCard({ meme, onEnlarge, onExplain, onShare, isExplaining }: SwipeCardProps) {
   const dragStartPos = useRef<{ x: number; y: number } | null>(null);
 
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -29,28 +30,33 @@ export default function SwipeCard({ meme, onEnlarge, onExplain, isExplaining }: 
 
   return (
     <div className="relative w-full h-full bg-white rounded-2xl sm:rounded-3xl border border-slate-300 overflow-hidden flex flex-col pointer-events-none select-none">
-      {/* Top Floating Badges: Subreddit, Author & Score */}
-      <div className="absolute top-2.5 sm:top-3 left-2.5 sm:left-3 right-2.5 sm:right-3 flex items-center justify-between z-20 pointer-events-auto">
-        <div className="flex items-center gap-1.5">
+      {/* Top Header Bar: Subreddit, Author, Score & Enlarge - Clean document flow, ZERO obstruction */}
+      <div className="flex-none h-10 px-3 sm:px-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between z-20 pointer-events-auto">
+        <div className="flex items-center gap-2 min-w-0">
           <a
             href={`https://reddit.com/r/${meme.source}`}
             target="_blank"
             rel="noopener noreferrer"
             title={`Browse r/${meme.source}`}
-            className="bg-black/60 hover:bg-black/80 px-2.5 py-0.5 sm:py-1 rounded-full backdrop-blur-md border border-white/20 text-[11px] font-semibold text-white transition-colors"
+            className="bg-slate-800 hover:bg-slate-700 px-2.5 py-0.5 rounded-full border border-slate-700/80 text-[11px] font-semibold text-slate-200 transition-colors truncate max-w-[130px]"
           >
             r/{meme.source}
           </a>
           {meme.author && (
-            <span className="hidden sm:flex items-center gap-1 bg-black/50 px-2.5 py-1 rounded-full backdrop-blur-md border border-white/10 text-[11px] text-slate-200">
-              <User size={11} className="text-slate-300" />
+            <span className="hidden sm:flex items-center gap-1 text-[11px] text-slate-400 truncate max-w-[120px]">
+              <User size={11} className="text-slate-500" />
               u/{meme.author}
             </span>
           )}
         </div>
 
         {/* Upvotes score & Enlarge button */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2 flex-none">
+          <div className="bg-slate-800/90 px-2.5 py-0.5 rounded-full border border-slate-700/80 flex items-center gap-1 text-[11px] font-semibold text-amber-300">
+            <span>▲</span>
+            <span>{meme.upvotes > 0 ? meme.upvotes.toLocaleString() : 'Hot'}</span>
+          </div>
+
           {onEnlarge && (
             <button
               type="button"
@@ -59,16 +65,11 @@ export default function SwipeCard({ meme, onEnlarge, onExplain, isExplaining }: 
                 onEnlarge(meme);
               }}
               title="Enlarge meme (Space / Click)"
-              className="p-1 sm:p-1.5 bg-black/60 hover:bg-black/80 text-white rounded-full backdrop-blur-md border border-white/20 transition-transform hover:scale-110"
+              className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
             >
-              <Maximize2 size={12} />
+              <Maximize2 size={13} />
             </button>
           )}
-
-          <div className="bg-black/60 px-2.5 py-0.5 sm:py-1 rounded-full backdrop-blur-md border border-white/20 flex items-center gap-1 text-[11px] font-semibold text-amber-300">
-            <span>▲</span>
-            <span>{meme.upvotes > 0 ? meme.upvotes.toLocaleString() : 'Hot'}</span>
-          </div>
         </div>
       </div>
 
@@ -141,6 +142,20 @@ export default function SwipeCard({ meme, onEnlarge, onExplain, isExplaining }: 
               <span>Reddit</span>
               <ExternalLink size={11} />
             </a>
+          )}
+
+          {onShare && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onShare(meme);
+              }}
+              title="Send to Friend in Direct Messages"
+              className="p-1.5 text-slate-500 hover:text-[#fe3c72] hover:bg-rose-50 rounded-lg border border-slate-200 transition-colors"
+            >
+              <Send size={12} />
+            </button>
           )}
         </div>
       </div>

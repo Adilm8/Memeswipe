@@ -150,3 +150,31 @@ class AIService:
         except Exception as e:
             print(f"Error in Gemini chat: {e}")
             return "My meme radar hit a tiny glitch! Try sending again in a moment."
+
+    async def chat_as_persona(
+        self,
+        persona_name: str,
+        persona_bio: Optional[str],
+        message: str,
+        meme: Optional[Meme] = None
+    ) -> str:
+        if not self._is_configured():
+            return f"Haha that's hilarious! {message} 😂"
+
+        system_prompt = (
+            f"You are roleplaying as {persona_name}, a friend on the social meme app MemeSwipe.\n"
+            f"Your bio and personality: '{persona_bio or 'Meme enthusiast'}'.\n"
+            "Stay strictly in character. Keep your reply concise (1 to 3 sentences), punchy, conversational, like a real DM on Instagram or Tinder.\n"
+            "Use emojis naturally. Match your comedic taste described in your bio."
+        )
+        if meme:
+            system_prompt += f"\nYour friend also sent you this meme: '{meme.title}' from r/{meme.source}."
+
+        full_prompt = f"{system_prompt}\nFriend's message: \"{message}\"\nYour direct reply:"
+        try:
+            response = self.model.generate_content(full_prompt)
+            return response.text.strip()
+        except Exception as e:
+            print(f"Error in persona chat: {e}")
+            return "Haha that's peak humor! Saved to my collection 💀🔥"
+

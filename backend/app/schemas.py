@@ -91,3 +91,51 @@ class HumorProfileResponse(BaseModel):
     profile: str
     top_categories: List[str]
     humor_style: str
+
+class UserSearchResult(BaseModel):
+    user_id: UUID
+    username: Optional[str] = None
+    nickname: str
+    bio: Optional[str] = None
+    avatar_url: Optional[str] = None
+    is_friend: bool = False
+    compatibility: int = 50
+
+class FriendResponse(BaseModel):
+    user_id: UUID
+    username: Optional[str] = None
+    nickname: str
+    bio: Optional[str] = None
+    avatar_url: Optional[str] = None
+    compatibility: int = 50
+    last_message: Optional[str] = None
+    last_message_time: Optional[datetime] = None
+    unread_count: int = 0
+
+class ChatMessageCreate(BaseModel):
+    content: str
+    meme_id: Optional[UUID] = None
+
+class ChatMessageResponse(BaseModel):
+    id: UUID
+    sender_id: UUID
+    receiver_id: UUID
+    content: str
+    meme_id: Optional[UUID] = None
+    meme_title: Optional[str] = None
+    meme_image_url: Optional[str] = None
+    is_read: bool = False
+    created_at: datetime
+    is_mine: bool = False
+
+class ConversationSummary(BaseModel):
+    friend_id: UUID
+    username: Optional[str] = None
+    nickname: str
+    avatar_url: Optional[str] = None
+    bio: Optional[str] = None
+    compatibility: int = 50
+    last_message: Optional[str] = None
+    last_message_time: Optional[datetime] = None
+    unread_count: int = 0
+

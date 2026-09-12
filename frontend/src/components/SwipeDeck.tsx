@@ -5,6 +5,7 @@ import SwipeCard from './SwipeCard';
 import ActionButtons from './ActionButtons';
 import MatchesModal from './MatchesModal';
 import MemeModal from './MemeModal';
+import SendMemeModal from './SendMemeModal';
 import { useMemes } from '@/hooks/useMemes';
 import { useSwipe } from '@/hooks/useSwipe';
 import { useSession } from '@/hooks/useSession';
@@ -21,6 +22,7 @@ export default function SwipeDeck() {
   const [hasShownMatches, setHasShownMatches] = useState(() => localStorage.getItem('matches_shown') === 'true');
   const [savedMemes, setSavedMemes] = useState<SavedMeme[]>([]);
   const [enlargedMeme, setEnlargedMeme] = useState<Meme | null>(null);
+  const [sharingMeme, setSharingMeme] = useState<Meme | null>(null);
   const [inlineExplanation, setInlineExplanation] = useState<{
     memeId: string;
     text: string | null;
@@ -165,9 +167,9 @@ export default function SwipeDeck() {
   const isCurrentSaved = currentMeme ? savedIds.has(currentMeme.id) : false;
 
   return (
-    <div className="relative w-full h-full flex flex-col items-center justify-between p-2 sm:p-4 md:p-6 overflow-hidden">
+    <div className="relative w-full h-full flex flex-col items-center justify-between p-2 sm:p-3 md:p-4 overflow-hidden">
       {/* Tinder Top Watermark Logo */}
-      <div className="flex items-center gap-1.5 select-none opacity-40 hover:opacity-80 transition-opacity mb-1 flex-none">
+      <div className="flex items-center gap-1.5 select-none opacity-40 hover:opacity-80 transition-opacity mb-0.5 flex-none">
         <div className="w-5 h-5 rounded-lg bg-gradient-to-tr from-[#fe3c72] to-[#ff655b] flex items-center justify-center text-[10px] text-white">
           🔥
         </div>
@@ -176,9 +178,9 @@ export default function SwipeDeck() {
         </span>
       </div>
 
-      {/* Main Tinder Card Deck Stage (scaled cleanly for all screen sizes) */}
-      <div className="flex-1 w-full flex items-center justify-center relative min-h-0 py-1">
-        <div className="relative w-full max-w-[360px] sm:max-w-[400px] md:max-w-[430px] h-[52vh] sm:h-[62vh] md:h-[68vh] max-h-[580px] flex items-center justify-center">
+      {/* Main Tinder Card Deck Stage (scaled cleanly for all screen sizes with larger, clearer memes) */}
+      <div className="flex-1 w-full flex items-center justify-center relative min-h-0 py-0.5 sm:py-1">
+        <div className="relative w-full max-w-[370px] sm:max-w-[430px] md:max-w-[490px] lg:max-w-[540px] xl:max-w-[570px] h-[58vh] sm:h-[65vh] md:h-[70vh] lg:h-[73vh] max-h-[640px] xl:max-h-[690px] flex items-center justify-center">
           {/* Empty Deck State */}
           {isEmpty ? (
             <div className="w-full h-full bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 flex flex-col items-center justify-center text-center animate-fadeIn">
@@ -237,6 +239,7 @@ export default function SwipeDeck() {
                 meme={meme} 
                 onEnlarge={(m) => setEnlargedMeme(m)} 
                 onExplain={handleToggleExplain}
+                onShare={(m) => setSharingMeme(m)}
                 isExplaining={inlineExplanation?.memeId === meme.id}
               />
             </TinderCard>
@@ -362,6 +365,13 @@ export default function SwipeDeck() {
             toggleSave(enlargedMeme);
           }
         }}
+      />
+
+      {/* Share to Friend Modal */}
+      <SendMemeModal
+        meme={sharingMeme}
+        isOpen={!!sharingMeme}
+        onClose={() => setSharingMeme(null)}
       />
     </div>
   );

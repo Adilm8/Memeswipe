@@ -6,6 +6,7 @@ import SavedPage from '@/pages/SavedPage';
 import ProfilePage from '@/pages/ProfilePage';
 import MatchesPage from '@/pages/MatchesPage';
 import AIPage from '@/pages/AIPage';
+import ChatPage from '@/pages/ChatPage';
 
 export default function App() {
   return (
@@ -17,6 +18,8 @@ export default function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/matches" element={<MatchesPage />} />
           <Route path="/ai" element={<AIPage />} />
+          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/chat/:friendId" element={<ChatPage />} />
         </Route>
       </Routes>
     </SessionProvider>

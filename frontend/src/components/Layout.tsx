@@ -1,11 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Bookmark, User, Heart, Sparkles, LogIn, LogOut, Flame, Bot, Send, Loader2, RotateCcw } from 'lucide-react';
+import { Bookmark, User, Heart, Sparkles, LogIn, LogOut, Flame, Bot, Send, Loader2, RotateCcw, MessageSquare, Search } from 'lucide-react';
 import { useSession } from '@/hooks/useSession';
 import { fetchMatches } from '@/api/profile';
 import { chatWithAI } from '@/api/ai';
-import { Match } from '@/api/types';
+import { fetchConversations } from '@/api/chat';
+import { Match, Conversation } from '@/api/types';
 import AuthModal from '@/components/AuthModal';
+import UserSearchModal from '@/components/UserSearchModal';
 import clsx from 'clsx';
 
 const DEFAULT_COMPANION_MESSAGES: Array<{ id: string; sender: 'ai' | 'user'; text: string }> = [
@@ -21,6 +23,9 @@ export default function Layout() {
   const navigate = useNavigate();
   const { session, likesCount, openAuthModal, logout } = useSession();
   const [matches, setMatches] = useState<Match[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [sidebarTab, setSidebarTab] = useState<'chats' | 'ai'>('chats');
 
   const companionKey = `memeswipe_companion_${session?.user_id || 'active'}`;
 
@@ -86,6 +91,26 @@ export default function Layout() {
         .catch((e) => console.error("Failed to load matches for sidebar:", e));
     }
   }, [session, likesCount]);
+
+  // Load and poll conversations for sidebar & unread badges
+  const loadConversations = useCallback(async () => {
+    if (session) {
+      try {
+        const convs = await fetchConversations();
+        setConversations(convs);
+      } catch (e) {
+        console.error("Failed to load conversations for sidebar:", e);
+      }
+    }
+  }, [session]);
+
+  useEffect(() => {
+    loadConversations();
+    const interval = setInterval(loadConversations, 3500);
+    return () => clearInterval(interval);
+  }, [loadConversations]);
+
+  const totalUnread = conversations.reduce((acc, c) => acc + (c.unread_count || 0), 0);
 
   const isSwipingRoute = location.pathname === '/';
   const displayName = session?.username || session?.nickname || 'Guest';
@@ -185,6 +210,20 @@ export default function Layout() {
           >
             <Heart size={19} strokeWidth={2.4} />
             {matches.length > 0 && (
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#fe3c72]" />
+            )}
+          </NavLink>
+
+          <NavLink
+            to="/chat"
+            title="Messages & Friends"
+            className={({ isActive }) => clsx(
+              "p-2 rounded-xl transition-all relative",
+              isActive ? "text-[#fe3c72] bg-rose-50 font-bold" : "text-slate-400 hover:text-slate-700"
+            )}
+          >
+            <MessageSquare size={19} strokeWidth={2.4} />
+            {totalUnread > 0 && (
               <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#fe3c72]" />
             )}
           </NavLink>
@@ -317,19 +356,19 @@ export default function Layout() {
           </button>
         </div>
 
-        {/* Section Tabs (Matches / AI Analyst / Saved / Profile) */}
-        <div className="flex items-center px-2 pt-2 pb-1 gap-1 border-b border-slate-100">
+        {/* Section Tabs (Matches / Chats / AI Analyst / Saved / Profile) */}
+        <div className="flex items-center px-1.5 pt-2 pb-1 gap-1 border-b border-slate-100 overflow-x-auto no-scrollbar">
           <NavLink
             to="/matches"
             title="Humor Matches"
             className={({ isActive }) => clsx(
-              "flex-1 py-1.5 px-1 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition-all",
+              "flex-1 py-1.5 px-0.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1 transition-all",
               isActive 
                 ? "text-[#fe3c72] bg-rose-50 border-b-2 border-[#fe3c72]"
                 : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
             )}
           >
-            <Heart size={13} strokeWidth={2.4} />
+            <Heart size={12} strokeWidth={2.4} />
             <span className="truncate">Matches</span>
             {matches.length > 0 && (
               <span className="px-1 py-0.1 bg-[#fe3c72] text-white rounded-full text-[9px] font-bold">
@@ -339,16 +378,35 @@ export default function Layout() {
           </NavLink>
 
           <NavLink
-            to="/ai"
-            title="AI Analyst"
+            to="/chat"
+            title="Direct Chats & Friends"
             className={({ isActive }) => clsx(
-              "flex-1 py-1.5 px-1 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition-all",
+              "flex-1 py-1.5 px-0.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1 transition-all relative",
               isActive 
                 ? "text-[#fe3c72] bg-rose-50 border-b-2 border-[#fe3c72]"
                 : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
             )}
           >
-            <Sparkles size={13} strokeWidth={2.4} />
+            <MessageSquare size={12} strokeWidth={2.4} />
+            <span className="truncate">Chats</span>
+            {totalUnread > 0 && (
+              <span className="px-1 py-0.1 bg-[#fe3c72] text-white rounded-full text-[9px] font-bold">
+                {totalUnread}
+              </span>
+            )}
+          </NavLink>
+
+          <NavLink
+            to="/ai"
+            title="AI Analyst"
+            className={({ isActive }) => clsx(
+              "flex-1 py-1.5 px-0.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1 transition-all",
+              isActive 
+                ? "text-[#fe3c72] bg-rose-50 border-b-2 border-[#fe3c72]"
+                : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
+            )}
+          >
+            <Sparkles size={12} strokeWidth={2.4} />
             <span className="truncate">Analyst</span>
           </NavLink>
 
@@ -356,13 +414,13 @@ export default function Layout() {
             to="/saved"
             title="Saved Memes"
             className={({ isActive }) => clsx(
-              "flex-1 py-1.5 px-1 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition-all",
+              "flex-1 py-1.5 px-0.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1 transition-all",
               isActive 
                 ? "text-[#fe3c72] bg-rose-50 border-b-2 border-[#fe3c72]"
                 : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
             )}
           >
-            <Bookmark size={13} strokeWidth={2.4} />
+            <Bookmark size={12} strokeWidth={2.4} />
             <span className="truncate">Saved</span>
           </NavLink>
 
@@ -370,141 +428,261 @@ export default function Layout() {
             to="/profile"
             title="My Profile"
             className={({ isActive }) => clsx(
-              "flex-1 py-1.5 px-1 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition-all",
+              "flex-1 py-1.5 px-0.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1 transition-all",
               isActive 
                 ? "text-[#fe3c72] bg-rose-50 border-b-2 border-[#fe3c72]"
                 : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
             )}
           >
-            <User size={13} strokeWidth={2.4} />
+            <User size={12} strokeWidth={2.4} />
             <span className="truncate">Profile</span>
           </NavLink>
         </div>
 
         {/* ========================================================= */}
-        {/* LOWER SIDEBAR: AI MEME COMPANION CHAT (Powered by Gemini) */}
+        {/* LOWER SIDEBAR: DUAL MODE (DIRECT CHATS or MEME AI COMPANION) */}
         {/* ========================================================= */}
         <div className="flex-1 flex flex-col min-h-0 bg-slate-50/50">
-          {/* AI Header */}
-          <div className="p-3 pb-2 border-b border-slate-100 flex items-center justify-between bg-white/70">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] flex items-center justify-center text-white shadow-2xs">
-                <Bot size={14} />
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                  <span>Meme Companion</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                </h4>
-              </div>
+          {/* Segmented Switch Header */}
+          <div className="p-2 border-b border-slate-100 bg-white/70 flex items-center justify-between gap-1.5">
+            <div className="flex-1 bg-slate-100/90 p-0.5 rounded-xl flex">
+              <button
+                type="button"
+                onClick={() => setSidebarTab('chats')}
+                className={clsx(
+                  "flex-1 py-1 px-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1",
+                  sidebarTab === 'chats'
+                    ? "bg-white text-slate-800 shadow-2xs"
+                    : "text-slate-500 hover:text-slate-800"
+                )}
+              >
+                <MessageSquare size={12} />
+                <span>Chats</span>
+                {totalUnread > 0 && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#fe3c72]" />
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSidebarTab('ai')}
+                className={clsx(
+                  "flex-1 py-1 px-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1",
+                  sidebarTab === 'ai'
+                    ? "bg-white text-slate-800 shadow-2xs"
+                    : "text-slate-500 hover:text-slate-800"
+                )}
+              >
+                <Bot size={12} />
+                <span>Meme AI</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              </button>
             </div>
-            <div className="flex items-center gap-1.5">
+
+            {sidebarTab === 'chats' ? (
+              <button
+                type="button"
+                onClick={() => setIsSearchOpen(true)}
+                title="Find Friends"
+                className="p-1.5 text-[#fe3c72] hover:bg-rose-50 border border-rose-200/80 rounded-xl transition-colors flex-none"
+              >
+                <Search size={13} />
+              </button>
+            ) : (
               <button
                 type="button"
                 onClick={handleClearCompanion}
                 title="Reset companion conversation"
-                className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors flex-none"
               >
-                <RotateCcw size={12} />
+                <RotateCcw size={13} />
               </button>
-              <span className="text-[10px] font-extrabold uppercase tracking-wide bg-rose-50 text-[#fe3c72] border border-rose-200/80 px-2 py-0.5 rounded-full flex items-center gap-1">
-                <Sparkles size={10} />
-                Gemini AI
-              </span>
-            </div>
-          </div>
-
-          {/* Quick Prompt Suggestion Chips */}
-          <div className="px-3 pt-2 pb-1.5 flex gap-1.5 overflow-x-auto no-scrollbar border-b border-slate-100/60 bg-white/40">
-            <button
-              type="button"
-              disabled={isAiLoading}
-              onClick={() => handleSendMessage("🎭 Roast my humor taste")}
-              className="text-[10px] font-semibold bg-white hover:bg-rose-50 text-slate-600 hover:text-[#fe3c72] border border-slate-200/80 hover:border-rose-200 rounded-full px-2.5 py-1 whitespace-nowrap transition-colors shadow-2xs disabled:opacity-50"
-            >
-              🎭 Roast taste
-            </button>
-            <button
-              type="button"
-              disabled={isAiLoading}
-              onClick={() => handleSendMessage("✨ What's my humor style based on my likes?")}
-              className="text-[10px] font-semibold bg-white hover:bg-rose-50 text-slate-600 hover:text-[#fe3c72] border border-slate-200/80 hover:border-rose-200 rounded-full px-2.5 py-1 whitespace-nowrap transition-colors shadow-2xs disabled:opacity-50"
-            >
-              ✨ My style
-            </button>
-            <button
-              type="button"
-              disabled={isAiLoading}
-              onClick={() => handleSendMessage("😂 Tell me a top tier meme joke")}
-              className="text-[10px] font-semibold bg-white hover:bg-rose-50 text-slate-600 hover:text-[#fe3c72] border border-slate-200/80 hover:border-rose-200 rounded-full px-2.5 py-1 whitespace-nowrap transition-colors shadow-2xs disabled:opacity-50"
-            >
-              😂 Joke
-            </button>
-          </div>
-
-          {/* Scrollable Conversation Bubbles */}
-          <div ref={chatScrollRef} className="flex-1 overflow-y-auto p-3 space-y-2.5">
-            {chatMessages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex gap-2 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                {msg.sender === 'ai' && (
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] flex items-center justify-center text-white flex-none text-[11px] shadow-2xs">
-                    🤖
-                  </div>
-                )}
-                <div
-                  className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${
-                    msg.sender === 'user'
-                      ? 'bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white font-medium rounded-tr-xs shadow-xs'
-                      : 'bg-white border border-slate-200/80 text-slate-700 rounded-tl-xs shadow-2xs whitespace-pre-line'
-                  }`}
-                >
-                  {msg.text}
-                </div>
-              </div>
-            ))}
-
-            {isAiLoading && (
-              <div className="flex gap-2 justify-start items-center">
-                <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] flex items-center justify-center text-white flex-none text-[11px] shadow-2xs">
-                  🤖
-                </div>
-                <div className="bg-white border border-slate-200/80 rounded-2xl px-3 py-2 flex items-center gap-2 shadow-2xs text-slate-500">
-                  <Loader2 size={13} className="animate-spin text-[#fe3c72]" />
-                  <span className="text-[11px] font-medium text-slate-600">Gemini is thinking...</span>
-                </div>
-              </div>
             )}
           </div>
 
-          {/* Chat Input Bar */}
-          <div className="p-2.5 bg-white border-t border-slate-100 flex items-center gap-1.5">
-            <input
-              type="text"
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleSendMessage();
-                }
-              }}
-              placeholder={isAiLoading ? "Waiting for Gemini..." : "Ask Meme AI..."}
-              disabled={isAiLoading}
-              className="flex-1 px-3 py-2 text-xs bg-slate-100/80 border border-slate-200/60 rounded-xl focus:outline-none focus:bg-white focus:border-[#fe3c72] transition-colors disabled:opacity-60"
-            />
-            <button
-              type="button"
-              onClick={() => handleSendMessage()}
-              disabled={!chatInput.trim() || isAiLoading}
-              className="p-2 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white rounded-xl hover:opacity-90 transition-all disabled:opacity-30 active:scale-95 shadow-2xs"
-              title="Send message"
-            >
-              {isAiLoading ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
-            </button>
-          </div>
+          {/* MODE 1: DIRECT CHATS LIST */}
+          {sidebarTab === 'chats' ? (
+            <div className="flex-1 flex flex-col min-h-0">
+              {conversations.length === 0 ? (
+                <div className="flex-1 p-4 flex flex-col items-center justify-center text-center">
+                  <div className="w-11 h-11 rounded-2xl bg-rose-50 flex items-center justify-center text-xl mb-2 border border-rose-100">
+                    💬
+                  </div>
+                  <h5 className="text-xs font-bold text-slate-700 mb-0.5">No Active Chats</h5>
+                  <p className="text-[11px] text-slate-400 mb-3 max-w-[180px]">
+                    Search for users or match with humor twins to start chatting!
+                  </p>
+                  <button
+                    onClick={() => setIsSearchOpen(true)}
+                    className="px-3 py-1.5 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 hover:opacity-95"
+                  >
+                    <Search size={12} />
+                    <span>Find Friends</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="flex-1 overflow-y-auto divide-y divide-slate-100/80">
+                  {conversations.map((conv) => {
+                    const isCurrentChat = location.pathname === `/chat/${conv.friend_id}`;
+                    const pct = conv.compatibility > 1 ? Math.round(conv.compatibility) : Math.round(conv.compatibility * 100);
+
+                    return (
+                      <div
+                        key={conv.friend_id}
+                        onClick={() => navigate(`/chat/${conv.friend_id}`)}
+                        className={clsx(
+                          "p-2.5 px-3 flex items-center justify-between cursor-pointer transition-colors group",
+                          isCurrentChat ? "bg-rose-50/80 border-l-3 border-[#fe3c72]" : "hover:bg-white"
+                        )}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="relative flex-none">
+                            <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] flex items-center justify-center text-white font-bold text-xs shadow-2xs">
+                              {conv.avatar_url ? (
+                                <img
+                                  src={conv.avatar_url}
+                                  alt={conv.nickname}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <span>{conv.nickname.substring(0, 2).toUpperCase()}</span>
+                              )}
+                            </div>
+                            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white bg-emerald-500" />
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <h5 className="text-xs font-bold text-slate-800 group-hover:text-[#fe3c72] transition-colors truncate">
+                                {conv.nickname}
+                              </h5>
+                              <span className="text-[9px] text-emerald-600 font-bold bg-emerald-50 border border-emerald-200/60 px-1 py-0.2 rounded-full">
+                                {pct}%
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                              {conv.last_message || "Started chatting"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-end gap-1 flex-none ml-2">
+                          {conv.unread_count > 0 && (
+                            <span className="px-1.5 py-0.2 bg-[#fe3c72] text-white rounded-full text-[9px] font-bold">
+                              {conv.unread_count}
+                            </span>
+                          )}
+                          <span className="text-[9px] text-slate-400">
+                            {conv.last_message_time
+                              ? new Date(conv.last_message_time).toLocaleTimeString([], {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })
+                              : ''}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ) : (
+            /* MODE 2: AI COMPANION (Gemini) */
+            <div className="flex-1 flex flex-col min-h-0">
+              {/* Quick Prompt Suggestion Chips */}
+              <div className="px-3 pt-2 pb-1.5 flex gap-1.5 overflow-x-auto no-scrollbar border-b border-slate-100/60 bg-white/40">
+                <button
+                  type="button"
+                  disabled={isAiLoading}
+                  onClick={() => handleSendMessage("🎭 Roast my humor taste")}
+                  className="text-[10px] font-semibold bg-white hover:bg-rose-50 text-slate-600 hover:text-[#fe3c72] border border-slate-200/80 hover:border-rose-200 rounded-full px-2.5 py-1 whitespace-nowrap transition-colors shadow-2xs disabled:opacity-50"
+                >
+                  🎭 Roast taste
+                </button>
+                <button
+                  type="button"
+                  disabled={isAiLoading}
+                  onClick={() => handleSendMessage("✨ What's my humor style based on my likes?")}
+                  className="text-[10px] font-semibold bg-white hover:bg-rose-50 text-slate-600 hover:text-[#fe3c72] border border-slate-200/80 hover:border-rose-200 rounded-full px-2.5 py-1 whitespace-nowrap transition-colors shadow-2xs disabled:opacity-50"
+                >
+                  ✨ My style
+                </button>
+                <button
+                  type="button"
+                  disabled={isAiLoading}
+                  onClick={() => handleSendMessage("😂 Tell me a top tier meme joke")}
+                  className="text-[10px] font-semibold bg-white hover:bg-rose-50 text-slate-600 hover:text-[#fe3c72] border border-slate-200/80 hover:border-rose-200 rounded-full px-2.5 py-1 whitespace-nowrap transition-colors shadow-2xs disabled:opacity-50"
+                >
+                  😂 Joke
+                </button>
+              </div>
+
+              {/* Scrollable Conversation Bubbles */}
+              <div ref={chatScrollRef} className="flex-1 overflow-y-auto p-3 space-y-2.5">
+                {chatMessages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`flex gap-2 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    {msg.sender === 'ai' && (
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] flex items-center justify-center text-white flex-none text-[11px] shadow-2xs">
+                        🤖
+                      </div>
+                    )}
+                    <div
+                      className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${
+                        msg.sender === 'user'
+                          ? 'bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white font-medium rounded-tr-xs shadow-xs'
+                          : 'bg-white border border-slate-200/80 text-slate-700 rounded-tl-xs shadow-2xs whitespace-pre-line'
+                      }`}
+                    >
+                      {msg.text}
+                    </div>
+                  </div>
+                ))}
+
+                {isAiLoading && (
+                  <div className="flex gap-2 justify-start items-center">
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#fe3c72] to-[#ff6036] flex items-center justify-center text-white flex-none text-[11px] shadow-2xs">
+                      🤖
+                    </div>
+                    <div className="bg-white border border-slate-200/80 rounded-2xl px-3 py-2 flex items-center gap-2 shadow-2xs text-slate-500">
+                      <Loader2 size={13} className="animate-spin text-[#fe3c72]" />
+                      <span className="text-[11px] font-medium text-slate-600">Gemini is thinking...</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Chat Input Bar */}
+              <div className="p-2.5 bg-white border-t border-slate-100 flex items-center gap-1.5">
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  placeholder={isAiLoading ? "Waiting for Gemini..." : "Ask Meme AI..."}
+                  disabled={isAiLoading}
+                  className="flex-1 px-3 py-2 text-xs bg-slate-100/80 border border-slate-200/60 rounded-xl focus:outline-none focus:bg-white focus:border-[#fe3c72] transition-colors disabled:opacity-60"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleSendMessage()}
+                  disabled={!chatInput.trim() || isAiLoading}
+                  className="p-2 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white rounded-xl hover:opacity-90 transition-all disabled:opacity-30 active:scale-95 shadow-2xs"
+                  title="Send message"
+                >
+                  {isAiLoading ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </aside>
 
@@ -514,6 +692,16 @@ export default function Layout() {
       <main className="flex-1 h-[calc(100dvh-3.5rem)] lg:h-full relative overflow-hidden flex flex-col bg-[#f0f2f5]">
         <Outlet />
       </main>
+
+      {/* Global User Search Modal */}
+      <UserSearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        onOpenChat={(uid) => {
+          setIsSearchOpen(false);
+          navigate(`/chat/${uid}`);
+        }}
+      />
     </div>
   );
 }

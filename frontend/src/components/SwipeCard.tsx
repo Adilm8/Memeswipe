@@ -5,9 +5,11 @@ import { useRef } from 'react';
 interface SwipeCardProps {
   meme: Meme;
   onEnlarge?: (meme: Meme) => void;
+  onExplain?: (meme: Meme) => void;
+  isExplaining?: boolean;
 }
 
-export default function SwipeCard({ meme, onEnlarge }: SwipeCardProps) {
+export default function SwipeCard({ meme, onEnlarge, onExplain, isExplaining }: SwipeCardProps) {
   const dragStartPos = useRef<{ x: number; y: number } | null>(null);
 
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -96,7 +98,24 @@ export default function SwipeCard({ meme, onEnlarge }: SwipeCardProps) {
         </h2>
 
         <div className="flex items-center gap-1.5 flex-none">
-          {onEnlarge && (
+          {onExplain ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onExplain(meme);
+              }}
+              title="Explain meme with AI (E)"
+              className={`flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg border transition-colors shadow-2xs ${
+                isExplaining
+                  ? 'bg-indigo-600 text-white border-indigo-600'
+                  : 'text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-indigo-200/80'
+              }`}
+            >
+              <Sparkles size={11} className={isExplaining ? 'animate-pulse' : ''} />
+              <span>{isExplaining ? 'Hide Info' : 'Explain'}</span>
+            </button>
+          ) : onEnlarge ? (
             <button
               type="button"
               onClick={(e) => {
@@ -104,12 +123,12 @@ export default function SwipeCard({ meme, onEnlarge }: SwipeCardProps) {
                 onEnlarge(meme);
               }}
               title="Explain meme with AI"
-              className="flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-lg border border-blue-200/80 transition-colors shadow-2xs"
+              className="flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded-lg border border-indigo-200/80 transition-colors shadow-2xs"
             >
               <Sparkles size={11} />
               <span>Explain</span>
             </button>
-          )}
+          ) : null}
 
           {meme.source_url && (
             <a

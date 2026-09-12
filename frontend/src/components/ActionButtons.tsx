@@ -1,17 +1,27 @@
 import { motion } from 'framer-motion';
-import { X, Star, Heart } from 'lucide-react';
+import { X, Star, Heart, Sparkles } from 'lucide-react';
 
 interface Props {
   onLike: () => void;
   onDislike: () => void;
   onSave: () => void;
+  onExplain?: () => void;
   isSaved?: boolean;
+  isExplaining?: boolean;
   disabled?: boolean;
 }
 
-export default function ActionButtons({ onLike, onDislike, onSave, isSaved, disabled }: Props) {
+export default function ActionButtons({ 
+  onLike, 
+  onDislike, 
+  onSave, 
+  onExplain,
+  isSaved, 
+  isExplaining,
+  disabled 
+}: Props) {
   return (
-    <div className="flex items-center justify-center gap-5 sm:gap-7">
+    <div className="flex items-center justify-center gap-4 sm:gap-6">
       {/* Nope (Dislike) */}
       <motion.button
         whileTap={{ scale: 0.88 }}
@@ -46,6 +56,29 @@ export default function ActionButtons({ onLike, onDislike, onSave, isSaved, disa
           className="transition-all duration-200"
         />
       </motion.button>
+
+      {/* AI Explain Meme Button */}
+      {onExplain && (
+        <motion.button
+          whileTap={{ scale: 0.88 }}
+          whileHover={{ scale: 1.08 }}
+          disabled={disabled}
+          onClick={onExplain}
+          title={isExplaining ? "Hide AI explanation (E)" : "Explain meme with AI (E)"}
+          aria-label="Explain meme with AI"
+          className={`w-12 h-12 sm:w-13 sm:h-13 rounded-full flex items-center justify-center shadow-md hover:shadow-xl border disabled:opacity-40 transition-all duration-200 ${
+            isExplaining
+              ? 'bg-indigo-50 border-indigo-500 text-indigo-600 shadow-indigo-500/20'
+              : 'bg-white border-slate-200 text-indigo-500 hover:border-indigo-400 hover:bg-indigo-50/40'
+          }`}
+        >
+          <Sparkles 
+            size={22} 
+            strokeWidth={2.4} 
+            className={`transition-all duration-200 ${isExplaining ? 'animate-pulse text-indigo-600' : ''}`}
+          />
+        </motion.button>
+      )}
 
       {/* Like (Heart) */}
       <motion.button

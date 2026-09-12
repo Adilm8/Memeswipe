@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import TinderCard from 'react-tinder-card';
+import { motion, AnimatePresence } from 'framer-motion';
 import SwipeCard from './SwipeCard';
 import ActionButtons from './ActionButtons';
 import MatchesModal from './MatchesModal';
@@ -8,8 +9,9 @@ import { useMemes } from '@/hooks/useMemes';
 import { useSwipe } from '@/hooks/useSwipe';
 import { useSession } from '@/hooks/useSession';
 import { fetchSaved } from '@/api/memes';
+import { explainMeme } from '@/api/ai';
 import { SavedMeme, Meme } from '@/api/types';
-import { Loader2, Sparkles, RotateCcw } from 'lucide-react';
+import { Loader2, Sparkles, RotateCcw, X, Maximize2 } from 'lucide-react';
 
 export default function SwipeDeck() {
   const { memes, removeMeme, isLoading, isRefilling, isEmpty, refillFeed, resetDislikesAndReload } = useMemes();
@@ -19,6 +21,11 @@ export default function SwipeDeck() {
   const [hasShownMatches, setHasShownMatches] = useState(() => localStorage.getItem('matches_shown') === 'true');
   const [savedMemes, setSavedMemes] = useState<SavedMeme[]>([]);
   const [enlargedMeme, setEnlargedMeme] = useState<Meme | null>(null);
+  const [inlineExplanation, setInlineExplanation] = useState<{
+    memeId: string;
+    text: string | null;
+    loading: boolean;
+  } | null>(null);
 
   const cardRefs = useRef<Record<string, any>>({});
   const isSwipingRef = useRef(false);
@@ -62,7 +69,29 @@ export default function SwipeDeck() {
     removeMeme(memeId);
     delete cardRefs.current[memeId];
     isSwipingRef.current = false;
+    setInlineExplanation(prev => (prev?.memeId === memeId ? null : prev));
   }, [removeMeme]);
+
+  // Toggle AI explanation on main screen
+  const handleToggleExplain = useCallback(async (meme: Meme) => {
+    if (inlineExplanation?.memeId === meme.id) {
+      setInlineExplanation(null);
+      return;
+    }
+
+    setInlineExplanation({ memeId: meme.id, text: null, loading: true });
+    try {
+      const explanation = await explainMeme(meme.id);
+      setInlineExplanation({ memeId: meme.id, text: explanation, loading: false });
+    } catch (err) {
+      console.error('Failed to explain meme:', err);
+      setInlineExplanation({ 
+        memeId: meme.id, 
+        text: "Could not analyze this meme right now. Try again in a moment!", 
+        loading: false 
+      });
+    }
+  }, [inlineExplanation]);
 
   // Programmatically trigger swipe with spring animation
   const triggerSwipe = useCallback(async (direction: 'left' | 'right') => {
@@ -97,7 +126,7 @@ export default function SwipeDeck() {
     refreshProfile();
   }, [savedIds, handleSave, handleUnsave, refreshProfile]);
 
-  // Global keyboard shortcuts (Left/Right arrow, Up/S to save, Space to enlarge)
+  // Global keyboard shortcuts (Left/Right arrow, Up/S to save, Space to enlarge, E to explain)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -116,6 +145,11 @@ export default function SwipeDeck() {
         if (currentMeme) {
           toggleSave(currentMeme);
         }
+      } else if (e.key === 'e' || e.key === 'E') {
+        e.preventDefault();
+        if (currentMeme) {
+          handleToggleExplain(currentMeme);
+        }
       } else if (e.key === ' ' || e.code === 'Space') {
         e.preventDefault();
         if (currentMeme) {
@@ -126,7 +160,7 @@ export default function SwipeDeck() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [triggerSwipe, toggleSave, currentMeme]);
+  }, [triggerSwipe, toggleSave, handleToggleExplain, currentMeme]);
 
   const isCurrentSaved = currentMeme ? savedIds.has(currentMeme.id) : false;
 
@@ -199,9 +233,64 @@ export default function SwipeDeck() {
               onCardLeftScreen={() => onCardLeftScreen(meme.id)}
               preventSwipe={['up', 'down']}
             >
-              <SwipeCard meme={meme} onEnlarge={(m) => setEnlargedMeme(m)} />
+              <SwipeCard 
+                meme={meme} 
+                onEnlarge={(m) => setEnlargedMeme(m)} 
+                onExplain={handleToggleExplain}
+                isExplaining={inlineExplanation?.memeId === meme.id}
+              />
             </TinderCard>
           ))}
+
+          {/* Main Screen Inline AI Explanation Overlay */}
+          <AnimatePresence>
+            {inlineExplanation && currentMeme && inlineExplanation.memeId === currentMeme.id && (
+              <motion.div
+                initial={{ opacity: 0, y: 15, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 15, scale: 0.96 }}
+                transition={{ duration: 0.2 }}
+                className="absolute bottom-14 sm:bottom-16 left-2.5 right-2.5 z-40 bg-slate-900/95 backdrop-blur-md text-white border border-indigo-500/40 rounded-2xl p-3.5 shadow-2xl pointer-events-auto select-text"
+              >
+                <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-800">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-400">
+                    <Sparkles size={14} className="text-indigo-400" />
+                    <span>Gemini AI Meme Analysis</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setEnlargedMeme(currentMeme)}
+                      title="Enlarge meme (Space)"
+                      className="px-2 py-0.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors flex items-center gap-1 text-[10px] font-medium border border-slate-700"
+                    >
+                      <Maximize2 size={11} />
+                      <span className="hidden sm:inline">Enlarge</span>
+                    </button>
+                    <button
+                      onClick={() => setInlineExplanation(null)}
+                      title="Close explanation (E)"
+                      className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                </div>
+
+                {inlineExplanation.loading ? (
+                  <div className="py-3 flex items-center gap-2 text-xs text-indigo-300">
+                    <Loader2 size={15} className="animate-spin text-indigo-400" />
+                    <span className="font-medium">Gemini Vision is analyzing meme & text...</span>
+                  </div>
+                ) : (
+                  <div className="max-h-36 sm:max-h-44 overflow-y-auto pr-1 mt-2">
+                    <p className="text-xs text-slate-200 leading-relaxed font-normal">
+                      {inlineExplanation.text}
+                    </p>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {isLoading && !isRefilling && (
             <div className="absolute inset-0 flex items-center justify-center bg-white/70 backdrop-blur-xs rounded-3xl z-50">
@@ -221,6 +310,8 @@ export default function SwipeDeck() {
               toggleSave(currentMeme);
             }
           }}
+          onExplain={() => currentMeme && handleToggleExplain(currentMeme)}
+          isExplaining={inlineExplanation?.memeId === currentMeme?.id}
           isSaved={isCurrentSaved}
           disabled={!currentMeme || isRefilling}
         />
@@ -235,6 +326,17 @@ export default function SwipeDeck() {
             <kbd className="px-1 bg-slate-100 rounded text-slate-600 font-mono text-[9px]">↑ / S</kbd>
             <span className="font-semibold text-slate-500 uppercase tracking-wider text-[9px]">{isCurrentSaved ? 'Saved' : 'Save'}</span>
           </span>
+          <button
+            onClick={() => currentMeme && handleToggleExplain(currentMeme)}
+            className={`flex items-center gap-1 bg-white border px-2 py-0.5 rounded-full transition-colors ${
+              inlineExplanation?.memeId === currentMeme?.id
+                ? 'border-indigo-500 text-indigo-600 bg-indigo-50'
+                : 'border-slate-200 text-slate-500 hover:border-indigo-400 hover:text-indigo-600'
+            }`}
+          >
+            <kbd className="px-1 bg-slate-100 rounded text-slate-600 font-mono text-[9px]">E</kbd>
+            <span className="font-semibold uppercase tracking-wider text-[9px]">Explain</span>
+          </button>
           <span className="flex items-center gap-1 bg-white border border-slate-200 px-2 py-0.5 rounded-full">
             <kbd className="px-1 bg-slate-100 rounded text-slate-600 font-mono text-[9px]">→</kbd>
             <span className="font-semibold text-slate-500 uppercase tracking-wider text-[9px]">Like</span>

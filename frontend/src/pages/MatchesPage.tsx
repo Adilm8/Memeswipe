@@ -1,65 +1,147 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Match, Meme } from '@/api/types';
 import { fetchMatches } from '@/api/profile';
 import MemeModal from '@/components/MemeModal';
-import { Loader2, Users } from 'lucide-react';
+import { Loader2, Flame, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function MatchesPage() {
+  const navigate = useNavigate();
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
 
   useEffect(() => {
-    fetchMatches().then(setMatches).catch(console.error).finally(() => setLoading(false));
+    fetchMatches()
+      .then(setMatches)
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="flex items-center justify-center h-full"><Loader2 className="animate-spin text-emerald-500" /></div>;
-
   return (
-    <div className="p-4 h-full overflow-y-auto pb-20">
-      <h2 className="text-xl font-bold text-white mb-6">Your Humor Twins 👯</h2>
-      
-      {matches.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-64 text-center text-slate-400">
-          <Users size={48} className="mb-4 opacity-50" />
-          <p>Like at least 10 memes to find your humor twins! 😄</p>
+    <div className="flex flex-col h-full bg-[#f0f2f5]">
+      {/* Top Bar with "Back to Swiping" button */}
+      <div className="flex-none bg-white border-b border-slate-200/90 px-6 py-4 flex items-center justify-between shadow-xs z-10">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate('/')}
+            className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors"
+            title="Back to Swiping"
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <h2 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+            <span>Humor Twins & Matches</span>
+            <span className="text-xs bg-rose-50 text-[#fe3c72] border border-rose-200 px-2 py-0.5 rounded-full font-bold">
+              {matches.length}
+            </span>
+          </h2>
         </div>
-      ) : (
-        <div className="space-y-4">
-          {matches.map((match, i) => (
-            <motion.div 
-              key={match.user_id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className="bg-slate-800 rounded-2xl p-4 border border-slate-700"
+
+        <button
+          onClick={() => navigate('/')}
+          className="px-4 py-1.5 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] hover:opacity-95 text-white rounded-full text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all active:scale-95"
+        >
+          <Flame size={14} />
+          <span>Swipe Memes</span>
+        </button>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 max-w-4xl w-full mx-auto">
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="animate-spin text-[#fe3c72] w-8 h-8" />
+          </div>
+        ) : matches.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-80 text-center bg-white rounded-3xl border border-slate-200 p-8 shadow-xs">
+            <div className="w-16 h-16 rounded-2xl bg-rose-50 flex items-center justify-center text-3xl mb-4 border border-rose-100">
+              👯
+            </div>
+            <h3 className="text-base font-bold text-slate-800 mb-1">No Humor Twins Yet</h3>
+            <p className="text-xs text-slate-500 max-w-sm mb-5 leading-relaxed">
+              Swipe and like at least 10 memes to find users with the exact same taste in comedy!
+            </p>
+            <button
+              onClick={() => navigate('/')}
+              className="px-5 py-2.5 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white rounded-xl text-xs font-bold shadow-md shadow-rose-500/20 flex items-center gap-2 transition-all active:scale-95"
             >
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="font-bold text-lg text-white">{match.nickname}</h3>
-                <span className="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm font-semibold">
-                  {(match.similarity_score * 100).toFixed(0)}% Match
-                </span>
-              </div>
-              <div className="w-full bg-slate-700 rounded-full h-2 mb-4">
-                <div className="bg-emerald-500 h-2 rounded-full" style={{ width: `${match.similarity_score * 100}%` }}></div>
-              </div>
-              <p className="text-sm text-slate-400 mb-2">{match.shared_memes_count} shared memes (tap to enlarge)</p>
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                {match.shared_memes.map(meme => (
-                  <img 
-                    key={meme.id} 
-                    src={meme.image_url} 
-                    alt={meme.title} 
-                    onClick={() => setSelectedMeme(meme)}
-                    className="w-16 h-16 rounded-xl object-cover flex-none cursor-pointer border border-slate-700 hover:border-emerald-400/60 hover:scale-105 transition-all" 
-                  />
-                ))}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      )}
+              <Flame size={15} />
+              Start Swiping Now
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {matches.map((match, i) => {
+              const percent = (match.similarity_score * 100).toFixed(0);
+              const initials = match.nickname.substring(0, 2).toUpperCase();
+
+              return (
+                <motion.div 
+                  key={match.user_id}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs hover:shadow-md transition-shadow"
+                >
+                  <div className="flex justify-between items-center mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-xs">
+                        {initials}
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-base text-slate-900">{match.nickname}</h3>
+                        <p className="text-xs text-slate-500">
+                          {match.shared_memes_count} shared memes in common
+                        </p>
+                      </div>
+                    </div>
+
+                    <span className="px-3 py-1 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-full text-xs font-extrabold shadow-2xs">
+                      {percent}% Match
+                    </span>
+                  </div>
+
+                  {/* Similarity meter */}
+                  <div className="w-full bg-slate-100 rounded-full h-2 mb-4 overflow-hidden">
+                    <div 
+                      className="bg-gradient-to-r from-emerald-400 to-emerald-500 h-2 rounded-full transition-all duration-500" 
+                      style={{ width: `${percent}%` }}
+                    />
+                  </div>
+
+                  {/* Shared Memes Row */}
+                  <div className="space-y-1.5">
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                      Memes You Both Liked (Tap to enlarge)
+                    </span>
+                    <div className="flex gap-2.5 overflow-x-auto pb-2 pt-1">
+                      {match.shared_memes.map(meme => (
+                        <div 
+                          key={meme.id} 
+                          onClick={() => setSelectedMeme(meme)}
+                          className="relative flex-none w-18 h-18 sm:w-20 sm:h-20 rounded-xl overflow-hidden cursor-pointer border border-slate-200 hover:border-[#fe3c72] hover:scale-105 transition-all shadow-xs group"
+                        >
+                          <img 
+                            src={meme.image_url} 
+                            alt={meme.title} 
+                            className="w-full h-full object-cover" 
+                          />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                          <span className="absolute bottom-1 left-1 bg-black/70 backdrop-blur-xs text-[9px] text-white font-semibold px-1 rounded">
+                            r/{meme.source}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Enlarged view for shared memes */}
       <MemeModal

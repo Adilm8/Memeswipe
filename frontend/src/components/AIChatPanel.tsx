@@ -5,7 +5,9 @@ import { Send, Sparkles, Loader2 } from 'lucide-react';
 import clsx from 'clsx';
 
 export default function AIChatPanel() {
-  const [messages, setMessages] = useState<AIMessage[]>([{ role: 'assistant', content: "Hi! I'm your AI Humor Analyst. What do you want to know about your meme taste?" }]);
+  const [messages, setMessages] = useState<AIMessage[]>([
+    { role: 'assistant', content: "Hi! I'm your AI Humor Analyst. Ask me anything about your meme taste, comedic patterns, or which matches share your sense of humor!" }
+  ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -29,56 +31,88 @@ export default function AIChatPanel() {
     setLoading(true);
     try {
       const profile = await fetchHumorProfile();
-      setMessages(p => [...p, { role: 'assistant', content: `Here is your humor profile:
-
-${profile.profile}
-
-Top categories: ${profile.top_categories.join(', ')}` }]);
+      setMessages(p => [...p, { 
+        role: 'assistant', 
+        content: `✨ **Here is your humor profile:**\n\n${profile.profile}\n\n**Top categories:** ${profile.top_categories.join(', ')}` 
+      }]);
     } catch (e) {
-      setMessages(p => [...p, { role: 'assistant', content: "Not enough data to analyze your humor yet!" }]);
+      setMessages(p => [...p, { role: 'assistant', content: "Not enough data to analyze your humor yet! Like at least 5 memes first." }]);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-900">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    <div className="flex flex-col h-full bg-[#f0f2f5]">
+      {/* Messages Scroll Area */}
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 max-w-3xl w-full mx-auto">
         {messages.map((m, i) => (
           <div key={i} className={clsx("flex", m.role === 'user' ? "justify-end" : "justify-start")}>
-            <div className={clsx("max-w-[80%] rounded-2xl p-3", m.role === 'user' ? "bg-blue-600 text-white rounded-tr-sm" : "bg-slate-800 text-slate-200 border border-slate-700 rounded-tl-sm")}>
-              <p className="whitespace-pre-wrap text-sm">{m.content}</p>
+            <div className={clsx(
+              "max-w-[85%] rounded-2xl p-4 shadow-xs text-sm leading-relaxed",
+              m.role === 'user' 
+                ? "bg-gradient-to-r from-[#fe3c72] to-[#ff6036] text-white rounded-tr-xs" 
+                : "bg-white text-slate-800 border border-slate-200/90 rounded-tl-xs"
+            )}>
+              <p className="whitespace-pre-wrap">{m.content}</p>
             </div>
           </div>
         ))}
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-slate-800 border border-slate-700 rounded-2xl p-3 rounded-tl-sm flex items-center space-x-2">
-              <Loader2 className="animate-spin w-4 h-4 text-slate-400" />
-              <span className="text-slate-400 text-sm">Thinking...</span>
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-4 rounded-tl-xs flex items-center space-x-2 text-slate-500 shadow-xs">
+              <Loader2 className="animate-spin w-4 h-4 text-[#fe3c72]" />
+              <span className="text-xs font-semibold">Analyzing humor neural pathways...</span>
             </div>
           </div>
         )}
       </div>
       
-      <div className="p-4 bg-slate-800 border-t border-slate-700">
-        <div className="flex gap-2 mb-3 overflow-x-auto pb-1 scrollbar-hide">
-          <button onClick={handleAnalyze} className="flex-none flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-xs text-white px-3 py-1.5 rounded-full transition-colors">
-            <Sparkles size={14} className="text-blue-400" /> Analyze My Humor
-          </button>
-        </div>
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && sendMessage(input)}
-            placeholder="Ask something..."
-            className="flex-1 bg-slate-900 border border-slate-700 rounded-full px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
-          />
-          <button onClick={() => sendMessage(input)} disabled={loading || !input.trim()} className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50">
-            <Send size={18} />
-          </button>
+      {/* Bottom Input Area */}
+      <div className="p-4 bg-white border-t border-slate-200/90 flex-none">
+        <div className="max-w-3xl mx-auto space-y-2.5">
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            <button 
+              onClick={handleAnalyze} 
+              disabled={loading}
+              className="flex-none flex items-center gap-1.5 bg-rose-50 hover:bg-rose-100 text-[#fe3c72] border border-rose-200 text-xs font-bold px-3.5 py-1.5 rounded-full transition-colors active:scale-95 disabled:opacity-50"
+            >
+              <Sparkles size={13} />
+              Analyze My Humor Profile
+            </button>
+            <button 
+              onClick={() => sendMessage("What kind of humor do I like the most?")}
+              disabled={loading}
+              className="flex-none text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 text-xs font-medium px-3 py-1.5 rounded-full transition-colors"
+            >
+              What is my top category?
+            </button>
+            <button 
+              onClick={() => sendMessage("Why did I match with my top match?")}
+              disabled={loading}
+              className="flex-none text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 text-xs font-medium px-3 py-1.5 rounded-full transition-colors"
+            >
+              Explain my matches
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && sendMessage(input)}
+              placeholder="Ask about your meme humor or matches..."
+              className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#fe3c72] focus:bg-white transition-colors"
+            />
+            <button 
+              onClick={() => sendMessage(input)} 
+              disabled={loading || !input.trim()} 
+              className="p-2.5 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] hover:opacity-95 text-white rounded-xl shadow-xs disabled:opacity-40 transition-all active:scale-95"
+            >
+              <Send size={18} />
+            </button>
+          </div>
         </div>
       </div>
     </div>

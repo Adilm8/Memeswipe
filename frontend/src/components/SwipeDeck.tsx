@@ -1,5 +1,4 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import TinderCard from 'react-tinder-card';
 import SwipeCard from './SwipeCard';
 import ActionButtons from './ActionButtons';
@@ -10,10 +9,9 @@ import { useSwipe } from '@/hooks/useSwipe';
 import { useSession } from '@/hooks/useSession';
 import { fetchSaved } from '@/api/memes';
 import { SavedMeme, Meme } from '@/api/types';
-import { Loader2, Sparkles, RotateCcw, ArrowRight, Bookmark, Command, Maximize2 } from 'lucide-react';
+import { Loader2, Sparkles, RotateCcw } from 'lucide-react';
 
 export default function SwipeDeck() {
-  const navigate = useNavigate();
   const { memes, removeMeme, isLoading, isRefilling, isEmpty, refillFeed, resetDislikesAndReload } = useMemes();
   const { handleSwipe, handleSave, handleUnsave } = useSwipe();
   const { session, likesCount, refreshProfile } = useSession();
@@ -31,7 +29,7 @@ export default function SwipeDeck() {
   // Set of saved meme IDs
   const savedIds = useMemo(() => new Set(savedMemes.map(s => s.meme.id)), [savedMemes]);
 
-  // Load existing saved memes for this guest session
+  // Load existing saved memes for this session
   useEffect(() => {
     if (session) {
       fetchSaved()
@@ -78,58 +76,45 @@ export default function SwipeDeck() {
     }
   }, [currentMeme, onSwipe, removeMeme]);
 
-  // Toggle save/unsave for a meme
+  // Save / Unsave toggle
   const toggleSave = useCallback(async (meme: Meme) => {
     const isCurrentlySaved = savedIds.has(meme.id);
-
-    // Optimistic UI state update
     if (isCurrentlySaved) {
       setSavedMemes(prev => prev.filter(s => s.meme.id !== meme.id));
+      await handleUnsave(meme.id);
     } else {
-      setSavedMemes(prev => [{ id: `temp-${Date.now()}`, meme, saved_at: new Date().toISOString() }, ...prev]);
+      const newSavedItem: SavedMeme = {
+        id: `temp-${meme.id}`,
+        meme: meme,
+        saved_at: new Date().toISOString()
+      };
+      setSavedMemes(prev => [newSavedItem, ...prev]);
+      await handleSave(meme.id);
     }
+    refreshProfile();
+  }, [savedIds, handleSave, handleUnsave, refreshProfile]);
 
-    try {
-      if (isCurrentlySaved) {
-        await handleUnsave(meme.id);
-      } else {
-        await handleSave(meme.id);
-      }
-    } catch (err) {
-      console.error('Toggle save failed:', err);
-      // Revert optimistic update on error
-      if (isCurrentlySaved) {
-        setSavedMemes(prev => [{ id: `temp-${Date.now()}`, meme, saved_at: new Date().toISOString() }, ...prev]);
-      } else {
-        setSavedMemes(prev => prev.filter(s => s.meme.id !== meme.id));
-      }
-    }
-  }, [savedIds, handleSave, handleUnsave]);
-
-  // Keyboard navigation (Arrow keys, S to save, Space/Enter to zoom)
+  // Global keyboard shortcuts (Left/Right arrow, Up/S to save, Space to enlarge)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) {
+      // Don't trigger if user is typing in an input/textarea
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
         return;
       }
 
-      // If modal is open, let modal handle its own keys (Escape, left/right inside modal)
-      if (enlargedMeme) {
-        return;
-      }
-
-      if (e.key === 'ArrowRight') {
-        e.preventDefault();
-        triggerSwipe('right');
-      } else if (e.key === 'ArrowLeft') {
+      if (e.key === 'ArrowLeft') {
         e.preventDefault();
         triggerSwipe('left');
-      } else if (e.key === 'ArrowUp' || e.key.toLowerCase() === 's') {
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        triggerSwipe('right');
+      } else if (e.key === 'ArrowUp' || e.key === 's' || e.key === 'S') {
         e.preventDefault();
         if (currentMeme) {
           toggleSave(currentMeme);
         }
-      } else if (e.key === ' ' || e.key === 'Enter' || e.key.toLowerCase() === 'z') {
+      } else if (e.key === ' ' || e.code === 'Space') {
         e.preventDefault();
         if (currentMeme) {
           setEnlargedMeme(currentMeme);
@@ -139,233 +124,132 @@ export default function SwipeDeck() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [triggerSwipe, toggleSave, currentMeme, enlargedMeme]);
+  }, [triggerSwipe, toggleSave, currentMeme]);
 
   const isCurrentSaved = currentMeme ? savedIds.has(currentMeme.id) : false;
 
   return (
-    <div className="flex-1 w-full h-full flex items-center justify-center px-4 sm:px-6 py-2 overflow-hidden">
-      {/* 3-Column Responsive Container to utilize free space on desktop */}
-      <div className="w-full max-w-7xl h-full flex items-center justify-center lg:justify-between gap-6 pb-20 sm:pb-24">
-        
-        {/* Left Sidebar on Desktop: Controls & Progress */}
-        <aside className="hidden lg:flex flex-col gap-4 w-64 xl:w-72 flex-none">
-          {/* Controls Card */}
-          <div className="bg-slate-900/70 border border-slate-800/90 rounded-2xl p-4">
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-              <Command size={14} className="text-orange-400" /> Keyboard Shortcuts
-            </h4>
-            <div className="space-y-2.5 text-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-slate-300">Swipe Left (Nope)</span>
-                <kbd className="px-2 py-1 bg-slate-800 rounded border border-slate-700 font-mono text-[11px] text-rose-400 font-semibold">←</kbd>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-300">Swipe Right (Like)</span>
-                <kbd className="px-2 py-1 bg-slate-800 rounded border border-slate-700 font-mono text-[11px] text-emerald-400 font-semibold">→</kbd>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-300">Save / Unsave</span>
-                <div className="flex items-center gap-1">
-                  <kbd className="px-1.5 py-1 bg-slate-800 rounded border border-slate-700 font-mono text-[11px] text-amber-400 font-semibold">↑</kbd>
-                  <span className="text-slate-500">/</span>
-                  <kbd className="px-1.5 py-1 bg-slate-800 rounded border border-slate-700 font-mono text-[11px] text-amber-400 font-semibold">S</kbd>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-300">Enlarge Meme</span>
-                <kbd className="px-2 py-1 bg-slate-800 rounded border border-slate-700 font-mono text-[11px] text-blue-400 font-semibold">Space</kbd>
-              </div>
-            </div>
-          </div>
-
-          {/* Taste Stats Card */}
-          <div className="bg-slate-900/70 border border-slate-800/90 rounded-2xl p-4">
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-              <span>📊</span> Humor Taste
-            </h4>
-            <div className="grid grid-cols-2 gap-2 text-center">
-              <div className="bg-slate-800/60 rounded-xl p-2.5 border border-slate-800">
-                <span className="text-xl font-extrabold text-emerald-400">{likesCount}</span>
-                <p className="text-[10px] text-slate-400 font-medium uppercase mt-0.5">Likes</p>
-              </div>
-              <div className="bg-slate-800/60 rounded-xl p-2.5 border border-slate-800">
-                <span className="text-xl font-extrabold text-amber-400">{savedMemes.length}</span>
-                <p className="text-[10px] text-slate-400 font-medium uppercase mt-0.5">Saved</p>
-              </div>
-            </div>
-
-            <div className="mt-3 p-2.5 bg-slate-800/40 rounded-xl text-center">
-              <p className="text-[11px] text-slate-400">
-                {likesCount >= 10 ? (
-                  <span className="text-emerald-400 font-semibold">🎉 Humor Twin Matches unlocked!</span>
-                ) : (
-                  <span>Like <strong className="text-white">{Math.max(0, 10 - likesCount)}</strong> more to unlock matches</span>
-                )}
-              </p>
-            </div>
-          </div>
-        </aside>
-
-        {/* Center Main Stage: Card Deck + Action Buttons */}
-        <div className="flex flex-col items-center justify-center flex-1 w-full max-w-sm sm:max-w-md lg:max-w-lg h-full">
-          <div className="relative w-full h-[54vh] sm:h-[58vh] max-h-[520px] mx-auto">
-            {/* Out of Memes / Refilling State */}
-            {(isEmpty || isRefilling) && !isLoading ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-slate-900/95 rounded-2xl border border-slate-800 z-20">
-                {isRefilling ? (
-                  <div className="flex flex-col items-center">
-                    <Loader2 className="animate-spin text-orange-400 w-12 h-12 mb-4" />
-                    <h3 className="text-lg font-bold text-white">Hunting fresh memes...</h3>
-                    <p className="text-xs text-slate-400 mt-1">Digging into Reddit's trending communities</p>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center max-w-xs">
-                    <span className="text-5xl mb-3">🔥</span>
-                    <h3 className="text-xl font-bold text-white mb-1">You're All Caught Up!</h3>
-                    <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-                      You swiped through all available memes. Choose what to do next:
-                    </p>
-
-                    <div className="flex flex-col gap-2.5 w-full">
-                      <button
-                        onClick={refillFeed}
-                        className="w-full py-3 px-4 bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white font-semibold text-sm rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95"
-                      >
-                        <Sparkles size={16} />
-                        Fetch More Memes from Internet
-                      </button>
-
-                      <button
-                        onClick={async () => {
-                          await resetDislikesAndReload();
-                          refreshProfile();
-                        }}
-                        className="w-full py-2.5 px-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-medium text-xs rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95"
-                      >
-                        <RotateCcw size={14} className="text-emerald-400" />
-                        Reshuffle Skipped Memes
-                      </button>
-
-                      <button
-                        onClick={() => navigate('/saved')}
-                        className="w-full py-2 px-4 text-slate-400 hover:text-amber-300 font-normal text-xs rounded-xl transition-colors mt-1"
-                      >
-                        ⭐ Browse Your Saved Memes
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : null}
-            
-            {activeMemes.map((meme) => (
-              <TinderCard
-                key={meme.id}
-                ref={(el: any) => {
-                  if (el) cardRefs.current[meme.id] = el;
-                  else delete cardRefs.current[meme.id];
-                }}
-                className="absolute inset-0 cursor-grab active:cursor-grabbing"
-                onSwipe={(dir) => onSwipe(dir, meme.id)}
-                onCardLeftScreen={() => onCardLeftScreen(meme.id)}
-                preventSwipe={['up', 'down']}
-              >
-                <SwipeCard meme={meme} onEnlarge={(m) => setEnlargedMeme(m)} />
-              </TinderCard>
-            ))}
-
-            {isLoading && !isRefilling && (
-              <div className="absolute inset-0 flex items-center justify-center bg-slate-900/60 rounded-2xl z-50">
-                <Loader2 className="animate-spin text-orange-400 w-10 h-10" />
-              </div>
-            )}
-          </div>
-
-          {/* Action Buttons: Clean & Perfectly spaced */}
-          <div className="mt-4 sm:mt-5 flex flex-col items-center">
-            <ActionButtons 
-              onLike={() => triggerSwipe('right')} 
-              onDislike={() => triggerSwipe('left')}
-              onSave={() => {
-                if (currentMeme) {
-                  toggleSave(currentMeme);
-                }
-              }}
-              isSaved={isCurrentSaved}
-              disabled={!currentMeme || isRefilling}
-            />
-
-            {/* Mobile / Tablet Keyboard shortcut hints */}
-            <div className="lg:hidden mt-2.5 flex items-center justify-center gap-2.5 text-[10px] text-slate-400 select-none">
-              <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 font-mono text-[9px] text-slate-300">←</kbd> Nope
-              </span>
-              <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 font-mono text-[9px] text-slate-300">↑</kbd> / <kbd className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 font-mono text-[9px] text-slate-300">S</kbd> {isCurrentSaved ? 'Saved' : 'Save'}
-              </span>
-              <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 font-mono text-[9px] text-slate-300">→</kbd> Like
-              </span>
-              <button
-                onClick={() => currentMeme && setEnlargedMeme(currentMeme)}
-                className="flex items-center gap-0.5 text-blue-400 hover:text-blue-300 ml-1"
-              >
-                <Maximize2 size={10} /> Enlarge
-              </button>
-            </div>
-          </div>
+    <div className="relative w-full h-full flex flex-col items-center justify-between p-4 sm:p-6 overflow-hidden">
+      {/* Tinder Top Watermark Logo */}
+      <div className="flex items-center gap-2 mb-2 select-none opacity-40 hover:opacity-80 transition-opacity">
+        <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-[#fe3c72] to-[#ff655b] flex items-center justify-center text-xs text-white">
+          🔥
         </div>
+        <span className="font-bold text-xs tracking-wider uppercase text-slate-400">
+          MemeSwipe Discover
+        </span>
+      </div>
 
-        {/* Right Sidebar on Desktop: Saved Memes Quick Preview */}
-        <aside className="hidden lg:flex flex-col gap-4 w-64 xl:w-72 flex-none">
-          <div className="bg-slate-900/70 border border-slate-800/90 rounded-2xl p-4 flex flex-col max-h-[420px]">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Bookmark size={14} className="text-amber-400" /> Saved Memes
-              </h4>
-              <button 
-                onClick={() => navigate('/saved')}
-                className="text-xs text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1 transition-colors"
-              >
-                View All <ArrowRight size={12} />
-              </button>
-            </div>
-
-            {savedMemes.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center text-center p-6 border border-dashed border-slate-800 rounded-xl">
-                <span className="text-3xl mb-2">⭐</span>
-                <p className="text-xs font-semibold text-slate-300">No saved memes yet</p>
-                <p className="text-[10px] text-slate-500 mt-1">Click the star button on any meme to save it here</p>
+      {/* Main Tinder Card Deck Stage */}
+      <div className="flex-1 w-full flex items-center justify-center relative min-h-0">
+        <div className="relative w-full max-w-[420px] aspect-[4/5] max-h-[66vh] sm:max-h-[70vh] flex items-center justify-center">
+          {/* Empty Deck State */}
+          {isEmpty ? (
+            <div className="w-full h-full bg-white rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-8 flex flex-col items-center justify-center text-center animate-fadeIn">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-[#fe3c72]/15 to-[#ff655b]/15 flex items-center justify-center text-4xl mb-4 border border-[#fe3c72]/20">
+                🎉
               </div>
-            ) : (
-              <div className="space-y-2.5 overflow-y-auto max-h-[300px] pr-1">
-                {savedMemes.slice(0, 4).map((s) => (
-                  <div
-                    key={s.id}
-                    onClick={() => setEnlargedMeme(s.meme)}
-                    className="flex items-center gap-3 p-2 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 rounded-xl cursor-pointer transition-all hover:scale-[1.02]"
+              <h3 className="text-xl font-bold text-slate-900 mb-2">You've Swiped Everything!</h3>
+              <p className="text-slate-500 text-xs sm:text-sm max-w-xs mb-6 leading-relaxed">
+                You have browsed all cached memes in this session. Fetch fresh memes from Reddit or reshuffle your skipped cards.
+              </p>
+              
+              {isRefilling ? (
+                <div className="flex flex-col items-center gap-2 py-4">
+                  <Loader2 className="animate-spin text-[#fe3c72] w-8 h-8" />
+                  <span className="text-xs font-semibold text-slate-600">Fetching latest memes from Reddit...</span>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2.5 w-full max-w-xs">
+                  <button
+                    onClick={() => refillFeed()}
+                    className="w-full py-3 px-4 bg-gradient-to-r from-[#fe3c72] to-[#ff6036] hover:opacity-95 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-md shadow-rose-500/20 flex items-center justify-center gap-2 transition-all active:scale-95"
                   >
-                    <img 
-                      src={s.meme.image_url} 
-                      alt={s.meme.title} 
-                      className="w-12 h-12 object-cover rounded-lg flex-none"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-slate-200 truncate">{s.meme.title}</p>
-                      <span className="text-[10px] text-slate-400">r/{s.meme.source}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </aside>
+                    <Sparkles size={16} />
+                    Fetch Fresh Memes from Reddit
+                  </button>
+
+                  <button
+                    onClick={async () => {
+                      await resetDislikesAndReload();
+                      refreshProfile();
+                    }}
+                    className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-medium text-xs rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95"
+                  >
+                    <RotateCcw size={14} className="text-emerald-500" />
+                    Reshuffle Skipped Memes
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : null}
+
+          {/* Active Cards */}
+          {activeMemes.map((meme) => (
+            <TinderCard
+              key={meme.id}
+              ref={(el: any) => {
+                if (el) cardRefs.current[meme.id] = el;
+                else delete cardRefs.current[meme.id];
+              }}
+              className="absolute inset-0 cursor-grab active:cursor-grabbing"
+              onSwipe={(dir) => onSwipe(dir, meme.id)}
+              onCardLeftScreen={() => onCardLeftScreen(meme.id)}
+              preventSwipe={['up', 'down']}
+            >
+              <SwipeCard meme={meme} onEnlarge={(m) => setEnlargedMeme(m)} />
+            </TinderCard>
+          ))}
+
+          {isLoading && !isRefilling && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/70 backdrop-blur-sm rounded-3xl z-50">
+              <Loader2 className="animate-spin text-[#fe3c72] w-10 h-10" />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Action Buttons & Tinder Keyboard Legend */}
+      <div className="flex-none flex flex-col items-center mt-3 sm:mt-4 w-full">
+        <ActionButtons 
+          onLike={() => triggerSwipe('right')} 
+          onDislike={() => triggerSwipe('left')}
+          onSave={() => {
+            if (currentMeme) {
+              toggleSave(currentMeme);
+            }
+          }}
+          isSaved={isCurrentSaved}
+          disabled={!currentMeme || isRefilling}
+        />
+
+        {/* Tinder-style Desktop Keyboard Shortcut Bar (matches uploaded design) */}
+        <div className="mt-3 flex items-center justify-center gap-2 sm:gap-3 text-[11px] text-slate-400 select-none flex-wrap">
+          <span className="flex items-center gap-1 bg-white/80 border border-slate-200 px-2 py-0.5 rounded-full shadow-xs">
+            <kbd className="px-1 bg-slate-100 rounded text-slate-600 font-mono text-[10px]">←</kbd>
+            <span className="font-semibold text-slate-500 uppercase tracking-wider text-[10px]">Nope</span>
+          </span>
+          <span className="flex items-center gap-1 bg-white/80 border border-slate-200 px-2 py-0.5 rounded-full shadow-xs">
+            <kbd className="px-1 bg-slate-100 rounded text-slate-600 font-mono text-[10px]">↑ / S</kbd>
+            <span className="font-semibold text-slate-500 uppercase tracking-wider text-[10px]">{isCurrentSaved ? 'Saved' : 'Save'}</span>
+          </span>
+          <span className="flex items-center gap-1 bg-white/80 border border-slate-200 px-2 py-0.5 rounded-full shadow-xs">
+            <kbd className="px-1 bg-slate-100 rounded text-slate-600 font-mono text-[10px]">→</kbd>
+            <span className="font-semibold text-slate-500 uppercase tracking-wider text-[10px]">Like</span>
+          </span>
+          <button
+            onClick={() => currentMeme && setEnlargedMeme(currentMeme)}
+            className="flex items-center gap-1 bg-white/80 border border-slate-200 px-2 py-0.5 rounded-full shadow-xs hover:border-[#fe3c72]/40 hover:text-[#fe3c72] transition-colors"
+          >
+            <kbd className="px-1 bg-slate-100 rounded text-slate-600 font-mono text-[10px]">Space</kbd>
+            <span className="font-semibold text-slate-500 uppercase tracking-wider text-[10px]">Enlarge</span>
+          </button>
+        </div>
       </div>
 
       {showMatches && <MatchesModal onClose={() => setShowMatches(false)} />}
       
-      {/* Fullscreen Enlarged Modal for any meme (Swipe page or Saved) */}
+      {/* Fullscreen Enlarged Modal for any meme */}
       <MemeModal 
         meme={enlargedMeme} 
         onClose={() => setEnlargedMeme(null)}

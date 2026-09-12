@@ -6,7 +6,7 @@ from typing import List, Dict, Any
 
 from sqlalchemy import select, func, text, delete
 from app.database import async_session
-from app.models import GuestUser, UserSwipe, SavedMeme, Meme
+from app.models import GuestUser, UserSwipe, SavedMeme, Meme, Friendship, ChatMessage
 from app.services.security import hash_password
 
 PERSONAS: List[Dict[str, Any]] = [
@@ -334,8 +334,14 @@ async def seed_data():
         memes_res = await db.execute(select(Meme))
         all_memes: List[Meme] = memes_res.scalars().all()
         if not all_memes:
-            print("ERROR: No memes found in the database. Please populate memes first.")
-            return
+            print("No memes found in database. Fetching fresh memes from Reddit first...")
+            from app.services.meme_seeder import seed_memes
+            await seed_memes(db)
+            memes_res = await db.execute(select(Meme))
+            all_memes = memes_res.scalars().all()
+            if not all_memes:
+                print("ERROR: Still no memes found in the database. Please check internet connection.")
+                return {"error": "No memes found"}
 
         print(f"Found {len(all_memes)} memes across sources: {set(m.source for m in all_memes)}")
 
@@ -357,6 +363,11 @@ async def seed_data():
         existing_users = existing_users_res.scalars().all()
         if existing_users:
             print(f"Cleaning {len(existing_users)} existing seed users for fresh generation...")
+            user_ids = [eu.id for eu in existing_users]
+            await db.execute(delete(UserSwipe).where(UserSwipe.user_id.in_(user_ids)))
+            await db.execute(delete(SavedMeme).where(SavedMeme.user_id.in_(user_ids)))
+            await db.execute(delete(Friendship).where((Friendship.user_id.in_(user_ids)) | (Friendship.friend_id.in_(user_ids))))
+            await db.execute(delete(ChatMessage).where((ChatMessage.sender_id.in_(user_ids)) | (ChatMessage.receiver_id.in_(user_ids))))
             for eu in existing_users:
                 await db.delete(eu)
             await db.commit()
@@ -493,6 +504,15 @@ async def seed_data():
         print(f"Total Memes Starred:           {total_saves_created}")
         print(f"All Registered Users password: '{DEFAULT_PASSWORD}'")
         print("=======================================================\n")
+
+        return {
+            "total_users_created": total_users_created,
+            "total_swipes_created": total_swipes_created,
+            "total_likes_created": total_likes_created,
+            "total_dislikes_created": total_dislikes_created,
+            "total_saves_created": total_saves_created,
+            "default_password": DEFAULT_PASSWORD,
+        }
 
 if __name__ == "__main__":
     asyncio.run(seed_data())

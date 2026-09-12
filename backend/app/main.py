@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from app.config import settings
 from app.database import init_db
-from app.routers import session, memes, profile, ai, auth, friends, chat
+from app.routers import session, memes, profile, ai, auth, friends, chat, admin
 from contextlib import asynccontextmanager
 
 @asynccontextmanager
@@ -30,6 +30,7 @@ app.include_router(profile.router, prefix="/api")
 app.include_router(ai.router, prefix="/api")
 app.include_router(friends.router, prefix="/api")
 app.include_router(chat.router, prefix="/api")
+app.include_router(admin.router, prefix="/api")
 
 # Serve built frontend in unified container (e.g. Railway / Docker production)
 static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")

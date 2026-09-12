@@ -1,0 +1,65 @@
+from pydantic import BaseModel
+from uuid import UUID
+from typing import Optional, List, Literal
+from datetime import datetime
+
+class MemeResponse(BaseModel):
+    id: UUID
+    title: str
+    image_url: str
+    source: str
+    upvotes: int
+    likes_count: int
+    dislikes_count: int
+    
+    class Config:
+        from_attributes = True
+
+class SwipeRequest(BaseModel):
+    action: Literal["like", "dislike"]
+
+class SessionResponse(BaseModel):
+    session_token: str
+    user_id: UUID
+    nickname: str
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class ProfileResponse(BaseModel):
+    user_id: UUID
+    nickname: str
+    total_swipes: int
+    total_likes: int
+    total_dislikes: int
+    total_saves: int
+    like_ratio: float
+    created_at: datetime
+
+class MatchResponse(BaseModel):
+    user_id: UUID
+    nickname: str
+    similarity_score: float
+    shared_memes_count: int
+    shared_memes: List[MemeResponse]
+
+class SavedMemeResponse(BaseModel):
+    id: UUID
+    meme: MemeResponse
+    saved_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class AIRequest(BaseModel):
+    message: str
+    meme_id: Optional[UUID] = None
+
+class AIResponse(BaseModel):
+    response: str
+
+class HumorProfileResponse(BaseModel):
+    profile: str
+    top_categories: List[str]
+    humor_style: str

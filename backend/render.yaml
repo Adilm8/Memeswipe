@@ -1,0 +1,22 @@
+databases:
+  - name: memeswipe-db
+    plan: free
+    databaseName: memeswipe
+    user: memeswipe_user
+
+services:
+  - type: web
+    name: memeswipe-api
+    plan: free
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: memeswipe-db
+          property: connectionString
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        value: '["https://memeswipe.vercel.app"]'

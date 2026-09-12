@@ -167,7 +167,7 @@ export default function SwipeDeck() {
   const isCurrentSaved = currentMeme ? savedIds.has(currentMeme.id) : false;
 
   return (
-    <div className="relative w-full h-full flex flex-col items-center justify-between p-1.5 sm:p-3 md:p-4 overflow-hidden">
+    <div className="relative w-full h-full flex-1 min-h-0 flex flex-col items-center p-1 sm:p-3 md:p-4 overflow-hidden">
       {/* Tinder Top Watermark Logo (hidden on mobile to maximize card & button visibility) */}
       <div className="hidden sm:flex items-center gap-1.5 select-none opacity-40 hover:opacity-80 transition-opacity mb-0.5 flex-none">
         <img src="/favicon-32x32.png" alt="Memeswipe" className="w-5 h-5 object-contain" />
@@ -178,7 +178,7 @@ export default function SwipeDeck() {
 
       {/* Main Tinder Card Deck Stage (fills available vertical space naturally) */}
       <div className="flex-1 w-full min-h-0 flex items-center justify-center relative py-0.5 sm:py-1">
-        <div className="relative w-full h-full max-w-[370px] sm:max-w-[430px] md:max-w-[490px] lg:max-w-[540px] xl:max-w-[570px] max-h-[580px] sm:max-h-[640px] xl:max-h-[690px] flex items-center justify-center">
+        <div className="relative w-full h-full max-w-[370px] sm:max-w-[430px] md:max-w-[490px] lg:max-w-[540px] xl:max-w-[570px] max-h-[520px] sm:max-h-[640px] xl:max-h-[690px] flex items-center justify-center">
           {/* Empty Deck State */}
           {isEmpty ? (
             <div className="w-full h-full bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 flex flex-col items-center justify-center text-center animate-fadeIn">
@@ -302,7 +302,7 @@ export default function SwipeDeck() {
       </div>
 
       {/* Action Buttons & Tinder Keyboard Legend */}
-      <div className="flex-none flex flex-col items-center mt-1 sm:mt-2.5 w-full pb-1 sm:pb-2">
+      <div className="flex-none flex flex-col items-center mt-auto pt-1 pb-1 sm:pb-2 w-full z-20">
         <ActionButtons 
           onLike={() => triggerSwipe('right')} 
           onDislike={() => triggerSwipe('left')}

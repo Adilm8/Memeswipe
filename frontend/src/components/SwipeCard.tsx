@@ -78,7 +78,7 @@ export default function SwipeCard({ meme, onEnlarge, onExplain, onShare, isExpla
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
         title="Click or tap to enlarge"
-        className="pointer-events-auto cursor-zoom-in relative flex-1 w-full h-full flex items-center justify-center bg-slate-950 p-1 sm:p-2.5 overflow-hidden"
+        className="pointer-events-auto cursor-zoom-in relative flex-1 min-h-0 w-full flex items-center justify-center bg-slate-950 p-1 sm:p-2.5 overflow-hidden"
       >
         <img 
           src={meme.image_url} 

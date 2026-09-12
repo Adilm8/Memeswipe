@@ -8,7 +8,19 @@
   }
 }
 
-body {
+html, body, #root {
+  height: 100%;
+  width: 100%;
   margin: 0;
-  overscroll-behavior-y: contain;
+  padding: 0;
+  overflow: hidden;
+  -webkit-text-size-adjust: 100%;
 }
+
+/* Ensure mobile browsers (iOS Safari, Android Chrome) strictly adhere to dynamic visible viewport */
+.app-screen-height {
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
+}
+

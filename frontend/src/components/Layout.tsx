@@ -149,7 +149,7 @@ export default function Layout() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen h-[100dvh] w-screen bg-[#f0f2f5] text-slate-800 font-sans overflow-hidden select-none">
+    <div className="flex flex-col lg:flex-row app-screen-height w-full bg-[#f0f2f5] text-slate-800 font-sans overflow-hidden select-none">
       <AuthModal />
 
       {/* ========================================================= */}
@@ -734,7 +734,7 @@ export default function Layout() {
       {/* ========================================================= */}
       {/* MAIN STAGE: Full Viewport on Mobile, Right Panel on Desktop */}
       {/* ========================================================= */}
-      <main className="flex-1 min-h-0 h-full relative overflow-hidden flex flex-col bg-[#f0f2f5]">
+      <main className="flex-1 min-h-0 w-full relative overflow-hidden flex flex-col bg-[#f0f2f5]">
         <Outlet />
       </main>
 

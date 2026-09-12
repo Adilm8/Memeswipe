@@ -16,7 +16,7 @@ export default function SwipeDeck() {
   const navigate = useNavigate();
   const { memes, removeMeme, isLoading, isRefilling, isEmpty, refillFeed, resetDislikesAndReload } = useMemes();
   const { handleSwipe, handleSave, handleUnsave } = useSwipe();
-  const { session, likesCount } = useSession();
+  const { session, likesCount, refreshProfile } = useSession();
   const [showMatches, setShowMatches] = useState(false);
   const [hasShownMatches, setHasShownMatches] = useState(() => localStorage.getItem('matches_shown') === 'true');
   const [savedMemes, setSavedMemes] = useState<SavedMeme[]>([]);
@@ -200,7 +200,7 @@ export default function SwipeDeck() {
                 {likesCount >= 10 ? (
                   <span className="text-emerald-400 font-semibold">🎉 Humor Twin Matches unlocked!</span>
                 ) : (
-                  <span>Like <strong className="text-white">{10 - likesCount}</strong> more to unlock matches</span>
+                  <span>Like <strong className="text-white">{Math.max(0, 10 - likesCount)}</strong> more to unlock matches</span>
                 )}
               </p>
             </div>
@@ -237,7 +237,10 @@ export default function SwipeDeck() {
                       </button>
 
                       <button
-                        onClick={resetDislikesAndReload}
+                        onClick={async () => {
+                          await resetDislikesAndReload();
+                          refreshProfile();
+                        }}
                         className="w-full py-2.5 px-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-medium text-xs rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95"
                       >
                         <RotateCcw size={14} className="text-emerald-400" />

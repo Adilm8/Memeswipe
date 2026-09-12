@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Bookmark, User, Heart, Sparkles, LogIn, LogOut, Flame, Bot, Send, Loader2, RotateCcw, Users, UserPlus } from 'lucide-react';
+import { Bookmark, Heart, Sparkles, LogIn, LogOut, Flame, Bot, Send, Loader2, RotateCcw, Users, UserPlus } from 'lucide-react';
 import { useSession } from '@/hooks/useSession';
 import { fetchMatches } from '@/api/profile';
 import { chatWithAI } from '@/api/ai';
@@ -357,7 +357,7 @@ export default function Layout() {
           </button>
         </div>
 
-        {/* Section Tabs (Matches / Chats / AI Analyst / Saved / Profile) */}
+        {/* Section Tabs (Matches / Social / AI Analyst / Saved) */}
         <div className="flex items-center px-1.5 pt-2 pb-1 gap-1 border-b border-slate-100 overflow-x-auto no-scrollbar">
           <NavLink
             to="/matches"
@@ -423,20 +423,6 @@ export default function Layout() {
           >
             <Bookmark size={12} strokeWidth={2.4} />
             <span className="truncate">Saved</span>
-          </NavLink>
-
-          <NavLink
-            to="/profile"
-            title="My Profile"
-            className={({ isActive }) => clsx(
-              "flex-1 py-1.5 px-0.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1 transition-all",
-              isActive 
-                ? "text-[#fe3c72] bg-rose-50 border-b-2 border-[#fe3c72]"
-                : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
-            )}
-          >
-            <User size={12} strokeWidth={2.4} />
-            <span className="truncate">Profile</span>
           </NavLink>
         </div>
 
